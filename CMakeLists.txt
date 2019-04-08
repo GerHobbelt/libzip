@@ -5,7 +5,15 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.0.2)
 
 LIST(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 
-PROJECT(libzip C)
+include(cmake/HunterGate.cmake)
+HunterGate(
+    URL "https://github.com/ruslo/hunter/archive/v0.23.151.tar.gz"
+    SHA1 "68657b81508c2d3c248731b5a0c2125f19866721"
+)
+
+PROJECT(libzip
+  LANGUAGES C
+  VERSION "1.5.2")
 
 OPTION(ENABLE_COMMONCRYPTO "Enable use of CommonCrypto" ON)
 OPTION(ENABLE_GNUTLS "Enable use of GnuTLS" ON)
@@ -47,7 +55,12 @@ ELSE()
   SET(MBEDTLS_LIBRARIES FALSE)
 ENDIF()
 IF(ENABLE_OPENSSL)
-  INCLUDE(FindOpenSSL)
+  IF(HUNTER_ENABLED)
+    hunter_add_package(OpenSSL)
+    find_package(OpenSSL REQUIRED)
+  ELSE(HUNTER_ENABLED)
+    INCLUDE(FindOpenSSL)
+  ENDIF(HUNTER_ENABLED)
 ELSE()
   SET(OPENSSL_FOUND FALSE)
 ENDIF()
@@ -202,23 +215,36 @@ int main(int argc, char *argv[]) { }" HAVE_NULLABLE)
 
 TEST_BIG_ENDIAN(WORDS_BIGENDIAN)
 
-FIND_PACKAGE(ZLIB REQUIRED)
-INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIR})
-SET(CMAKE_REQUIRED_INCLUDES ${ZLIB_INCLUDE_DIR})
-IF(ZLIB_VERSION_STRING VERSION_LESS "1.1.2")
-  MESSAGE(FATAL_ERROR "-- ZLIB version too old, please install at least v1.1.2")
-ENDIF(ZLIB_VERSION_STRING VERSION_LESS "1.1.2")
+IF(HUNTER_ENABLED)
+  hunter_add_package(ZLIB)
+  find_package(ZLIB CONFIG REQUIRED)
+  set(ZLIB_LIBRARY ZLIB::zlib)
+ELSE(HUNTER_ENABLED)
+  FIND_PACKAGE(ZLIB REQUIRED)
+  INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIR})
+  SET(CMAKE_REQUIRED_INCLUDES ${ZLIB_INCLUDE_DIR})
+  IF(ZLIB_VERSION_STRING VERSION_LESS "1.1.2")
+    MESSAGE(FATAL_ERROR "-- ZLIB version too old, please install at least v1.1.2")
+  ENDIF(ZLIB_VERSION_STRING VERSION_LESS "1.1.2")
+ENDIF(HUNTER_ENABLED)
 
 IF(ENABLE_BZIP2)
-  FIND_PACKAGE(BZip2)
-  IF(BZIP2_FOUND)
+  IF(HUNTER_ENABLED)
+    hunter_add_package(BZip2)
+    find_package(BZip2 CONFIG REQUIRED)
     SET (HAVE_LIBBZ2 1)
+    SET (OPTIONAL_LIBRARY BZip2::bz2)
+  ELSE(HUNTER_ENABLED)
+    FIND_PACKAGE(BZip2)
+    IF(BZIP2_FOUND)
+      SET (HAVE_LIBBZ2 1)
 
-    INCLUDE_DIRECTORIES(${BZIP2_INCLUDE_DIR})
-    SET (OPTIONAL_LIBRARY ${BZIP2_LIBRARY})
-  ELSE()
-    MESSAGE(WARNING "-- bzip2 library not found; bzip2 support disabled")
-  ENDIF(BZIP2_FOUND)
+      INCLUDE_DIRECTORIES(${BZIP2_INCLUDE_DIR})
+      SET (OPTIONAL_LIBRARY ${BZIP2_LIBRARY})
+    ELSE()
+      MESSAGE(WARNING "-- bzip2 library not found; bzip2 support disabled")
+    ENDIF(BZIP2_FOUND)
+  ENDIF(HUNTER_ENABLED)
 ENDIF(ENABLE_BZIP2)
 
 IF (COMMONCRYPTO_FOUND)
@@ -235,8 +261,15 @@ ELSEIF (GNUTLS_FOUND AND NETTLE_FOUND)
 ELSEIF (OPENSSL_FOUND)
   SET (HAVE_CRYPTO 1)
   SET (HAVE_OPENSSL 1)
-  INCLUDE_DIRECTORIES(${OPENSSL_INCLUDE_DIR})
-  SET (OPTIONAL_LIBRARY ${OPTIONAL_LIBRARY} ${OPENSSL_LIBRARIES})
+  IF (HUNTER_ENABLED)
+    SET (OPTIONAL_LIBRARY ${OPTIONAL_LIBRARY} OpenSSL::SSL OpenSSL::Crypto)
+    IF (WIN32)
+      SET (OPTIONAL_LIBRARY ${OPTIONAL_LIBRARY} ws2_32)
+    ENDIF (WIN32)
+  ELSE (HUNTER_ENABLED)
+    INCLUDE_DIRECTORIES(${OPENSSL_INCLUDE_DIR})
+    SET (OPTIONAL_LIBRARY ${OPTIONAL_LIBRARY} ${OPENSSL_LIBRARIES})
+  ENDIF (HUNTER_ENABLED)
 ELSEIF (MBEDTLS_LIBRARIES)
   SET (HAVE_CRYPTO 1)
   SET (HAVE_MBEDTLS 1)
@@ -420,3 +453,46 @@ FILE(COPY ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/runtest
 # installation
 
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/zipconf.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+####
+# Installation (https://github.com/forexample/package-example) {
+
+set(config_install_dir "lib/cmake/${PROJECT_NAME}")
+
+set(generated_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
+
+# Configuration
+set(version_config "${generated_dir}/${PROJECT_NAME}ConfigVersion.cmake")
+set(project_config "${generated_dir}/${PROJECT_NAME}Config.cmake")
+set(targets_export_name "${PROJECT_NAME}Targets")
+set(namespace "${PROJECT_NAME}::")
+
+# Include module with fuction 'write_basic_package_version_file'
+include(CMakePackageConfigHelpers)
+
+# Note: PROJECT_VERSION is used as a VERSION
+write_basic_package_version_file(
+    "${version_config}" COMPATIBILITY SameMajorVersion
+)
+
+# Use variables:
+#   * targets_export_name
+#   * PROJECT_NAME
+configure_package_config_file(
+    "cmake/Config.cmake.in"
+    "${project_config}"
+    INSTALL_DESTINATION "${config_install_dir}"
+)
+
+install(
+    FILES "${project_config}" "${version_config}"
+    DESTINATION "${config_install_dir}"
+)
+
+install(
+    EXPORT "${targets_export_name}"
+    NAMESPACE "${namespace}"
+    DESTINATION "${config_install_dir}"
+)
+
+# }
