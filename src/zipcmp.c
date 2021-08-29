@@ -45,7 +45,12 @@
 #ifdef HAVE_FTS_H
 #include <fts.h>
 #endif
+#ifdef HAVE_ZLIB_H
 #include <zlib.h>
+#endif
+#ifdef HAVE_ZLIB_NG_H
+#include <zlib-ng.h>
+#endif
 
 #ifndef HAVE_GETOPT
 #include "getopt.h"
@@ -91,7 +96,7 @@ typedef struct {
     const char * const name;
 } enum_map_t;
 
-const enum_map_t comp_methods[] = {
+static const enum_map_t comp_methods[] = {
     { 0, "Stored (no compression)" },
     { 1, "Shrunk" },
     { 2, "Reduced with compression factor 1" },
@@ -121,7 +126,7 @@ const enum_map_t comp_methods[] = {
     { UINT32_MAX, NULL }
 };
 
-const enum_map_t extra_fields[] = {
+static const enum_map_t extra_fields[] = {
     /* PKWARE defined */
     { 0x0001, "Zip64 extended information" },
     { 0x0007, "AV Info" },
@@ -180,15 +185,15 @@ const enum_map_t extra_fields[] = {
 };
 
 
-const char *progname;
+static const char *progname;
 
 #define PROGRAM "zipcmp"
 
 #define USAGE "usage: %s [-hipqtVv] archive1 archive2\n"
 
-char help_head[] = PROGRAM " (" PACKAGE ") by Dieter Baron and Thomas Klausner\n\n";
+static char help_head[] = PROGRAM " (" PACKAGE ") by Dieter Baron and Thomas Klausner\n\n";
 
-char help[] = "\n\
+static char help[] = "\n\
   -h       display this help message\n\
   -C       check archive consistencies\n\
   -i       compare names ignoring case distinctions\n\
@@ -200,7 +205,7 @@ char help[] = "\n\
 \n\
 Report bugs to <libzip@nih.at>.\n";
 
-char version_string[] = PROGRAM " (" PACKAGE " " VERSION ")\n\
+static char version_string[] = PROGRAM " (" PACKAGE " " VERSION ")\n\
 Copyright (C) 2003-2021 Dieter Baron and Thomas Klausner\n\
 " PACKAGE " comes with ABSOLUTELY NO WARRANTY, to the extent permitted by law.\n";
 
@@ -210,15 +215,15 @@ Copyright (C) 2003-2021 Dieter Baron and Thomas Klausner\n\
 #define BOTH_ARE_ZIPS(a) (a[0].za && a[1].za)
 
 static int comment_compare(const char *c1, size_t l1, const char *c2, size_t l2);
-static int compare_list(char *const name[2], const void *list[2], const zip_uint64_t list_length[2], int element_size, int (*cmp)(const void *a, const void *b), int (*ignore)(const void *list, int last, const void *other), int (*check)(char *const name[2], const void *a, const void *b), void (*print)(char side, const void *element), void (*start_file)(const void *element));
-static int compare_zip(char *const zn[]);
-static int ef_compare(char *const name[2], const struct entry *e1, const struct entry *e2);
+static int compare_list(const char *const name[2], const void *list[2], const zip_uint64_t list_length[2], int element_size, int (*cmp)(const void *a, const void *b), int (*ignore)(const void *list, int last, const void *other), int (*check)(const char *const name[2], const void *a, const void *b), void (*print)(char side, const void *element), void (*start_file)(const void *element));
+static int compare_zip(const char *const zn[]);
+static int ef_compare(const char *const name[2], const struct entry *e1, const struct entry *e2);
 static int ef_order(const void *a, const void *b);
 static void ef_print(char side, const void *p);
 static int ef_read(zip_t *za, zip_uint64_t idx, struct entry *e);
 static int entry_cmp(const void *p1, const void *p2);
 static int entry_ignore(const void *p1, int last, const void *o);
-static int entry_paranoia_checks(char *const name[2], const void *p1, const void *p2);
+static int entry_paranoia_checks(const char *const name[2], const void *p1, const void *p2);
 static void entry_print(char side, const void *p);
 static void entry_start_file(const void *p);
 static const char *map_enum(const enum_map_t *map, uint32_t value);
@@ -230,9 +235,9 @@ static int list_directory(const char *name, struct archive *a);
 static int list_zip(const char *name, struct archive *a);
 static int test_file(zip_t *za, zip_uint64_t idx, const char *zipname, const char *filename, zip_uint64_t size, zip_uint32_t crc);
 
-int ignore_case, test_files, paranoid, verbose, have_directory, check_consistency;
+static int ignore_case, test_files, paranoid, verbose, have_directory, check_consistency;
 
-diff_output_t output;
+static diff_output_t output;
 
 
 
@@ -300,7 +305,7 @@ int main(int argc, const char** argv)
 
 
 static int
-compare_zip(char *const zn[]) {
+compare_zip(const char *const zn[]) {
     struct archive a[2];
     struct entry *e[2];
     zip_uint64_t n[2];
@@ -590,7 +595,7 @@ comment_compare(const char *c1, size_t l1, const char *c2, size_t l2) {
 }
 
 
-static int compare_list(char *const name[2], const void *list[2], const zip_uint64_t list_length[2], int element_size, int (*cmp)(const void *a, const void *b), int (*ignore)(const void *list, int last, const void *other), int (*check)(char *const name[2], const void *a, const void *b), void (*print)(char side, const void *element), void (*start_file)(const void *element)) {
+static int compare_list(const char *const name[2], const void *list[2], const zip_uint64_t list_length[2], int element_size, int (*cmp)(const void *a, const void *b), int (*ignore)(const void *list, int last, const void *other), int (*check)(const char *const name[2], const void *a, const void *b), void (*print)(char side, const void *element), void (*start_file)(const void *element)) {
     unsigned int i[2];
     int j;
     int diff;
@@ -680,7 +685,7 @@ ef_read(zip_t *za, zip_uint64_t idx, struct entry *e) {
 
 
 static int
-ef_compare(char *const name[2], const struct entry *e1, const struct entry *e2) {
+ef_compare(const char *const name[2], const struct entry *e1, const struct entry *e2) {
     struct ef *ef[2];
     zip_uint64_t n[2];
 
@@ -769,7 +774,7 @@ entry_ignore(const void *p, int last, const void *o) {
 
 
 static int
-entry_paranoia_checks(char *const name[2], const void *p1, const void *p2) {
+entry_paranoia_checks(const char *const name[2], const void *p1, const void *p2) {
     const struct entry *e1, *e2;
     int ret;
 
@@ -825,12 +830,12 @@ test_file(zip_t *za, zip_uint64_t idx, const char *zipname, const char *filename
         return -1;
     }
 
-    ncrc = (zip_uint32_t)crc32(0, NULL, 0);
+    ncrc = (zip_uint32_t)zng_crc32(0, NULL, 0);
     nsize = 0;
 
     while ((n = zip_fread(zf, buf, sizeof(buf))) > 0) {
         nsize += (zip_uint64_t)n;
-        ncrc = (zip_uint32_t)crc32(ncrc, (const Bytef *)buf, (unsigned int)n);
+        ncrc = (zip_uint32_t)zng_crc32(ncrc, (const Bytef *)buf, (unsigned int)n);
     }
 
     if (n < 0) {

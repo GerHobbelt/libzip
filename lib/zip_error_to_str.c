@@ -31,13 +31,18 @@
   IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#define _ZIP_COMPILING_DEPRECATED
+#include "zipint.h"
+
 
 #include <stdio.h>
 #include <string.h>
+#ifdef HAVE_ZLIB_H
 #include <zlib.h>
-
-#define _ZIP_COMPILING_DEPRECATED
-#include "zipint.h"
+#endif
+#ifdef HAVE_ZLIB_NG_H
+#include <zlib-ng.h>
+#endif
 
 
 ZIP_EXTERN int
@@ -56,7 +61,7 @@ zip_error_to_str(char *buf, zip_uint64_t len, int ze, int se) {
             break;
             
         case ZIP_ET_ZLIB:
-            ss = zError(se);
+            ss = zng_zError(se);
             break;
             
         default:

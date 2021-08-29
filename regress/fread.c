@@ -65,7 +65,7 @@ int main(int argc, const char** argv)
     int c;
     zip_t *z;
     zip_source_t *zs;
-    char *archive;
+    const char *archive;
     zip_int64_t idx;
 
     verbose = 0;

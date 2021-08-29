@@ -31,13 +31,18 @@
   IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include "zipint.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef HAVE_ZLIB_H
 #include <zlib.h>
+#endif
+#ifdef HAVE_ZLIB_NG_H
+#include <zlib-ng.h>
+#endif
 
-#include "zipint.h"
 
 ZIP_EXTERN const char *
 zip_error_strerror(zip_error_t *err) {
@@ -61,7 +66,7 @@ zip_error_strerror(zip_error_t *err) {
                 break;
                 
             case ZIP_ET_ZLIB:
-                system_error_string = zError(err->sys_err);
+                system_error_string = zng_zError(err->sys_err);
                 break;
                 
             case ZIP_ET_LIBZIP: {

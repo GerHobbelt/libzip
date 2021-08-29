@@ -49,7 +49,7 @@ int main(int argc, const char** argv)
     int ze;
     zip_t *z;
     zip_file_t *zf;
-    char *archive;
+    const char *archive;
     zip_int64_t offset, n;
     zip_uint64_t index;
     char b[1024];

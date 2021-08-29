@@ -31,12 +31,17 @@
   IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include "zipint.h"
 
 #include <limits.h>
 #include <stdlib.h>
+#ifdef HAVE_ZLIB_H
 #include <zlib.h>
+#endif
+#ifdef HAVE_ZLIB_NG_H
+#include <zlib-ng.h>
+#endif
 
-#include "zipint.h"
 
 struct crc_context {
     int validate;     /* whether to check CRC on EOF and return error on mismatch */
@@ -69,7 +74,7 @@ zip_source_crc_create(zip_source_t *src, int validate, zip_error_t *error) {
     ctx->validate = validate;
     ctx->crc_complete = 0;
     ctx->crc_position = 0;
-    ctx->crc = (zip_uint32_t)crc32(0, NULL, 0);
+    ctx->crc = (zip_uint32_t)zng_crc32(0, NULL, 0);
     ctx->size = 0;
 
     return zip_source_layered_create(src, crc_read, ctx, error);
@@ -125,7 +130,7 @@ crc_read(zip_source_t *src, void *_ctx, void *data, zip_uint64_t len, zip_source
             for (i = ctx->crc_position - ctx->position; i < (zip_uint64_t)n; i += nn) {
                 nn = ZIP_MIN(UINT_MAX, (zip_uint64_t)n - i);
 
-                ctx->crc = (zip_uint32_t)crc32(ctx->crc, (const Bytef *)data + i, (uInt)nn);
+                ctx->crc = (zip_uint32_t)zng_crc32(ctx->crc, (const Bytef *)data + i, (uInt)nn);
                 ctx->crc_position += nn;
             }
         }

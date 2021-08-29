@@ -38,11 +38,11 @@
 extern "C" {
 #endif
 
-extern char *optarg;
+extern const char *optarg;
 extern int optind;
 extern int opterr;
 
-extern int getopt(int, char *const *, const char *);
+extern int getopt(int, const char *const *, const char *);
 
 #ifdef __cplusplus
 }

@@ -40,15 +40,44 @@ static char *utf16_strdup(const char *string);
 
 /* clang-format off */
 
+// fix MSVC warning C4232 : nonstandard extension used : address of dllimport '_strdup' is not static, identity not guaranteed
+// etc.etc.
+
+static BOOL __stdcall delete_file_w(const void* name)
+{
+	return DeleteFileW(name);
+}
+
+static DWORD __stdcall get_file_attributes_w(const void* name)
+{
+	return GetFileAttributesW(name);
+}
+
+static BOOL __stdcall get_file_attributes_ex_w(const void* name, GET_FILEEX_INFO_LEVELS info_level, void* information)
+{
+	return GetFileAttributesExW(name, info_level, information);
+}
+
+static BOOL __stdcall move_file_w(const void* from, const void* to, DWORD flags)
+{
+	return MoveFileExW(from, to, flags);
+}
+
+static BOOL __stdcall set_file_attributes_w(const void* name, DWORD attributes)
+{
+	return SetFileAttributesW(name, attributes);
+}
+
+
 zip_win32_file_operations_t ops_utf16 = {
     utf16_allocate_tempname,
     utf16_create_file,
-    DeleteFileW,
-    GetFileAttributesW,
-    GetFileAttributesExW,
+    delete_file_w,
+    get_file_attributes_w,
+    get_file_attributes_ex_w,
     utf16_make_tempname,
-    MoveFileExW,
-    SetFileAttributesW,
+    move_file_w,
+    set_file_attributes_w,
     utf16_strdup
 };
 
@@ -69,7 +98,6 @@ zip_source_win32w_create(const wchar_t *fname, zip_uint64_t start, zip_int64_t l
         zip_error_set(error, ZIP_ER_INVAL, 0);
         return NULL;
     }
-
 
     return zip_source_file_common_new((const char *)fname, NULL, start, length, NULL, &_zip_source_file_win32_named_ops, &ops_utf16, error);
 }

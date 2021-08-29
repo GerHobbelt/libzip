@@ -17,7 +17,7 @@ typedef struct {
 #define PRINTF_LIKE(n, m)
 #endif
 
-void diff_output_init(diff_output_t *output, int verbose, char *const archive_names[]);
+void diff_output_init(diff_output_t *output, int verbose, const char *const archive_names[]);
 void diff_output_start_file(diff_output_t *output, const char *name, zip_uint64_t size, zip_uint32_t crc);
 void diff_output_end_file(diff_output_t *output);
 

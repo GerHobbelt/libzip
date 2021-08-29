@@ -11,11 +11,11 @@ typedef enum { SOURCE_TYPE_NONE, SOURCE_TYPE_IN_MEMORY, SOURCE_TYPE_HOLE } sourc
 source_type_t source_type = SOURCE_TYPE_NONE;
 zip_uint64_t fragment_size = 0;
 
-static int add_nul(int argc, char *argv[]);
-static int cancel(int argc, char *argv[]);
-static int unchange_one(int argc, char *argv[]);
-static int unchange_all(int argc, char *argv[]);
-static int zin_close(int argc, char *argv[]);
+static int add_nul(int argc, const char *argv[]);
+static int cancel(int argc, const char *argv[]);
+static int unchange_one(int argc, const char *argv[]);
+static int unchange_all(int argc, const char *argv[]);
+static int zin_close(int argc, const char *argv[]);
 
 #define OPTIONS_REGRESS "F:Hm"
 
@@ -47,6 +47,7 @@ static int zin_close(int argc, char *argv[]);
 zip_t *ziptool_open(const char *archive, int flags, zip_error_t *error, zip_uint64_t offset, zip_uint64_t len);
 
 
+#define REGRESS   1
 #include "ziptool.c"
 
 
@@ -59,7 +60,7 @@ static zip_source_t *source_nul(zip_t *za, zip_uint64_t length);
 
 
 static int
-add_nul(int argc, char *argv[]) {
+add_nul(int argc, const char *argv[]) {
     zip_source_t *zs;
     zip_uint64_t length = strtoull(argv[1], NULL, 10);
 
@@ -77,7 +78,7 @@ add_nul(int argc, char *argv[]) {
 }
 
 static int
-unchange_all(int argc, char *argv[]) {
+unchange_all(int argc, const char *argv[]) {
     if (zip_unchange_all(za) < 0) {
         fprintf(stderr, "can't revert changes to archive: %s\n", zip_strerror(za));
         return -1;
@@ -87,7 +88,7 @@ unchange_all(int argc, char *argv[]) {
 
 
 static int
-unchange_one(int argc, char *argv[]) {
+unchange_one(int argc, const char *argv[]) {
     zip_uint64_t idx;
 
     idx = strtoull(argv[0], NULL, 10);
@@ -110,7 +111,7 @@ cancel_callback(zip_t *archive, void *ud) {
 }
 
 static int
-cancel(int argc, char *argv[]) {
+cancel(int argc, const char *argv[]) {
     zip_int64_t percent;
     percent = strtoll(argv[0], NULL, 10);
     if (percent > 100 || percent < 0) {
@@ -127,7 +128,7 @@ cancel(int argc, char *argv[]) {
 }
 
 static int
-zin_close(int argc, char *argv[]) {
+zin_close(int argc, const char *argv[]) {
     zip_uint64_t idx;
 
     idx = strtoull(argv[0], NULL, 10);

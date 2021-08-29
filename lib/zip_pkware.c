@@ -31,11 +31,16 @@
   IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include "zipint.h"
 
 #include <stdlib.h>
+#ifdef HAVE_ZLIB_H
 #include <zlib.h>
+#endif
+#ifdef HAVE_ZLIB_NG_H
+#include <zlib-ng.h>
+#endif
 
-#include "zipint.h"
 
 #define PKWARE_KEY0 305419896
 #define PKWARE_KEY1 591751049
@@ -44,10 +49,10 @@
 
 static void
 update_keys(zip_pkware_keys_t *keys, zip_uint8_t b) {
-    keys->key[0] = (zip_uint32_t)crc32(keys->key[0] ^ 0xffffffffUL, &b, 1) ^ 0xffffffffUL;
+    keys->key[0] = (zip_uint32_t)zng_crc32(keys->key[0] ^ 0xffffffffUL, &b, 1) ^ 0xffffffffUL;
     keys->key[1] = (keys->key[1] + (keys->key[0] & 0xff)) * 134775813 + 1;
     b = (zip_uint8_t)(keys->key[1] >> 24);
-    keys->key[2] = (zip_uint32_t)crc32(keys->key[2] ^ 0xffffffffUL, &b, 1) ^ 0xffffffffUL;
+    keys->key[2] = (zip_uint32_t)zng_crc32(keys->key[2] ^ 0xffffffffUL, &b, 1) ^ 0xffffffffUL;
 }
 
 

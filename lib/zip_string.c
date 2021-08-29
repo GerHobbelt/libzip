@@ -31,21 +31,26 @@
   IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include "zipint.h"
 
 #include <stdlib.h>
 #include <string.h>
+#ifdef HAVE_ZLIB_H
 #include <zlib.h>
+#endif
+#ifdef HAVE_ZLIB_NG_H
+#include <zlib-ng.h>
+#endif
 
-#include "zipint.h"
 
 zip_uint32_t
 _zip_string_crc32(const zip_string_t *s) {
     zip_uint32_t crc;
 
-    crc = (zip_uint32_t)crc32(0L, Z_NULL, 0);
+    crc = (zip_uint32_t)zng_crc32(0L, Z_NULL, 0);
 
     if (s != NULL)
-        crc = (zip_uint32_t)crc32(crc, s->raw, s->length);
+        crc = (zip_uint32_t)zng_crc32(crc, s->raw, s->length);
 
     return crc;
 }

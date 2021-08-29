@@ -35,14 +35,20 @@
 
 #include <limits.h>
 #include <stdlib.h>
+#ifdef HAVE_ZLIB_H
 #include <zlib.h>
+#endif
+#ifdef HAVE_ZLIB_NG_H
+#include <zlib-ng.h>
+#endif
+
 
 struct ctx {
     zip_error_t *error;
     bool compress;
     int compression_flags;
     bool end_of_input;
-    z_stream zstr;
+    zng_stream zstr;
 };
 
 
@@ -134,10 +140,10 @@ start(void *ud, zip_stat_t *st, zip_file_attributes_t *attributes) {
 
     if (ctx->compress) {
         /* negative value to tell zlib not to write a header */
-        ret = deflateInit2(&ctx->zstr, ctx->compression_flags, Z_DEFLATED, -MAX_WBITS, MAX_MEM_LEVEL, Z_DEFAULT_STRATEGY);
+        ret = zng_deflateInit2(&ctx->zstr, ctx->compression_flags, Z_DEFLATED, -MAX_WBITS, MAX_MEM_LEVEL, Z_DEFAULT_STRATEGY);
     }
     else {
-        ret = inflateInit2(&ctx->zstr, -MAX_WBITS);
+        ret = zng_inflateInit2(&ctx->zstr, -MAX_WBITS);
     }
 
     if (ret != Z_OK) {
@@ -156,10 +162,10 @@ end(void *ud) {
     int err;
 
     if (ctx->compress) {
-        err = deflateEnd(&ctx->zstr);
+        err = zng_deflateEnd(&ctx->zstr);
     }
     else {
-        err = inflateEnd(&ctx->zstr);
+        err = zng_inflateEnd(&ctx->zstr);
     }
 
     if (err != Z_OK) {
@@ -205,10 +211,10 @@ process(void *ud, zip_uint8_t *data, zip_uint64_t *length) {
     ctx->zstr.next_out = (Bytef *)data;
 
     if (ctx->compress) {
-        ret = deflate(&ctx->zstr, ctx->end_of_input ? Z_FINISH : 0);
+        ret = zng_deflate(&ctx->zstr, ctx->end_of_input ? Z_FINISH : 0);
     }
     else {
-        ret = inflate(&ctx->zstr, Z_SYNC_FLUSH);
+        ret = zng_inflate(&ctx->zstr, Z_SYNC_FLUSH);
     }
 
     *length = *length - ctx->zstr.avail_out;

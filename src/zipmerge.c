@@ -46,15 +46,15 @@
 
 #include "zip.h"
 
-char *progname;
+static const char *progname;
 
 #define PROGRAM "zipmerge"
 
 #define USAGE "usage: %s [-DhIiSsV] target-zip zip...\n"
 
-char help_head[] = PROGRAM " (" PACKAGE ") by Dieter Baron and Thomas Klausner\n\n";
+static char help_head[] = PROGRAM " (" PACKAGE ") by Dieter Baron and Thomas Klausner\n\n";
 
-char help[] = "\n\
+static char help[] = "\n\
   -h       display this help message\n\
   -V       display version number\n\
   -D       ignore directory component in file names\n\
@@ -65,7 +65,7 @@ char help[] = "\n\
 \n\
 Report bugs to <libzip@nih.at>.\n";
 
-char version_string[] = PROGRAM " (" PACKAGE " " VERSION ")\n\
+static char version_string[] = PROGRAM " (" PACKAGE " " VERSION ")\n\
 Copyright (C) 2004-2021 Dieter Baron and Thomas Klausner\n\
 " PACKAGE " comes with ABSOLUTELY NO WARRANTY, to the extent permitted by law.\n";
 
@@ -76,8 +76,8 @@ Copyright (C) 2004-2021 Dieter Baron and Thomas Klausner\n\
 #define CONFIRM_SAME_YES 0x010
 #define CONFIRM_SAME_NO 0x020
 
-int confirm;
-zip_flags_t name_flags;
+static int confirm;
+static zip_flags_t name_flags;
 
 static int confirm_replace(zip_t *, const char *, zip_uint64_t, zip_t *, const char *, zip_uint64_t);
 static zip_t *merge_zip(zip_t *, const char *, const char *);
@@ -95,7 +95,7 @@ int main(int argc, const char** argv)
     zip_t **zs;
     int c, err;
     unsigned int i, n;
-    char *tname;
+    const char *tname;
 
     progname = argv[0];
 

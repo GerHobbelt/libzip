@@ -16,7 +16,7 @@ static void ensure_header(diff_output_t *output) {
     }
 }
 
-void diff_output_init(diff_output_t *output, int verbose, char *const archive_names[]) {
+void diff_output_init(diff_output_t *output, int verbose, const char *const archive_names[]) {
     output->archive_names[0] = archive_names[0];
     output->archive_names[1] = archive_names[1];
     output->verbose = verbose;

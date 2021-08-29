@@ -31,15 +31,17 @@
   IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include "config.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 /* #include <string.h> */
 #include <errno.h>
+#if defined(HAVE_DLFCN_H)
 #define __USE_GNU
 #include <dlfcn.h>
 #undef __USE_GNU
-
-#include "config.h"
+#endif
 
 #if !defined(RTLD_NEXT)
 #define RTLD_NEXT RTLD_DEFAULT
@@ -76,6 +78,34 @@ static const char *myname = NULL;
 /* TODO: catch free for sentinel too */
 /* TODO: optionally, catch malloc of particular size */
 
+#if !defined(HAVE_DLSYM)
+
+static void* lcl_malloc(size_t size)
+{
+	return malloc(size);
+}
+
+static void* lcl_calloc(size_t number, size_t size)
+{
+	return calloc(number, size);
+}
+
+static void* lcl_realloc(void* ptr, size_t size)
+{
+	if (!ptr)
+	{
+		return malloc(size);
+	}
+	if (!size)
+	{
+		free(ptr);
+		return NULL;
+	}
+	return realloc(ptr, size);
+}
+
+#endif
+
 static void
 init(void) {
     char *foo;
@@ -86,7 +116,8 @@ init(void) {
         max_count = strtoul(foo, NULL, 0);
     if ((foo = getenv("MALLOC_MIN_SIZE")) != NULL)
         min_size = strtoul(foo, NULL, 0);
-    real_calloc = dlsym(RTLD_NEXT, "calloc");
+#if defined(HAVE_DLSYM)
+	real_calloc = dlsym(RTLD_NEXT, "calloc");
     if (!real_calloc)
         abort();
     real_malloc = dlsym(RTLD_NEXT, "malloc");
@@ -95,11 +126,16 @@ init(void) {
     real_realloc = dlsym(RTLD_NEXT, "realloc");
     if (!real_realloc)
         abort();
-    inited = 1;
+#else
+	real_calloc = lcl_calloc;
+	real_malloc = lcl_malloc;
+	real_realloc = lcl_realloc;
+#endif
+	inited = 1;
 }
 
 void *
-calloc(size_t number, size_t size) {
+zcalloc(size_t number, size_t size) {
     void *ret;
 
     if (!inited) {
@@ -120,7 +156,7 @@ calloc(size_t number, size_t size) {
 }
 
 void *
-malloc(size_t size) {
+zmalloc(size_t size) {
     void *ret;
 
     if (!inited) {
@@ -141,7 +177,7 @@ malloc(size_t size) {
 }
 
 void *
-realloc(void *ptr, size_t size) {
+zrealloc(void *ptr, size_t size) {
     void *ret;
 
     if (!inited) {

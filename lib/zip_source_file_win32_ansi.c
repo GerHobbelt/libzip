@@ -48,7 +48,7 @@ static HANDLE __stdcall create_file_a(const void* name, DWORD access, DWORD shar
 
 static BOOL __stdcall delete_file_a(const void* name)
 {
-	return DeeleteFileA(name);
+	return DeleteFileA(name);
 }
 
 static DWORD __stdcall get_file_attributes_a(const void* name)
@@ -58,7 +58,7 @@ static DWORD __stdcall get_file_attributes_a(const void* name)
 
 static BOOL __stdcall get_file_attributes_ex_a(const void* name, GET_FILEEX_INFO_LEVELS info_level, void* information)
 {
-	return GetFileAttributesA(name, info_level, information);
+	return GetFileAttributesExA(name, info_level, information);
 }
 
 static BOOL __stdcall move_file_a(const void* from, const void* to, DWORD flags)
@@ -75,6 +75,7 @@ static char* string_duplicate_a(const char* string)
 {
 	return strdup(string);
 }
+
 
 zip_win32_file_operations_t ops_ansi = {
     ansi_allocate_tempname,

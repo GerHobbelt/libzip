@@ -35,9 +35,17 @@
 #include "zipint.h"
 
 #include <limits.h>
+#ifdef HAVE_LZMA_H
 #include <lzma.h>
+#endif
 #include <stdlib.h>
+#ifdef HAVE_ZLIB_H
 #include <zlib.h>
+#endif
+#ifdef HAVE_ZLIB_NG_H
+#include <zlib-ng.h>
+#endif
+
 
 enum header_state { INCOMPLETE, OUTPUT, DONE };
 

@@ -38,6 +38,9 @@
 #include "zip_crypto.h"
 
 #include <limits.h>
+
+#if defined(HAVE_OPENSSL)
+
 #include <openssl/rand.h>
 
 #if OPENSSL_VERSION_NUMBER < 0x1010000fL || (defined(LIBRESSL_VERSION_NUMBER) && LIBRESSL_VERSION_NUMBER < 0x02070000fL)
@@ -182,3 +185,5 @@ ZIP_EXTERN bool
 zip_secure_random(zip_uint8_t *buffer, zip_uint16_t length) {
     return RAND_bytes(buffer, length) == 1;
 }
+
+#endif

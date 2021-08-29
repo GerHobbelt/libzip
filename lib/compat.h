@@ -191,4 +191,10 @@ typedef char bool;
 #define S_ISREG(mode) (((mode)&S_IFMT) == S_IFREG)
 #endif
 
+#if defined(_WIN32) || defined(_WIN64)
+#if defined(_MSC_VER)
+typedef unsigned int mode_t;
+#endif
+#endif
+
 #endif /* compat.h */
