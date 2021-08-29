@@ -38,16 +38,54 @@ static void ansi_make_tempname(char *buf, size_t len, const char *name, zip_uint
 
 /* clang-format off */
 
+// fix MSVC warning C4232 : nonstandard extension used : address of dllimport '_strdup' is not static, identity not guaranteed
+// etc.etc.
+
+static HANDLE __stdcall create_file_a(const void* name, DWORD access, DWORD share_mode, PSECURITY_ATTRIBUTES security_attributes, DWORD creation_disposition, DWORD file_attributes, HANDLE template_file)
+{
+	return CreateFileA(name, access, share_mode, security_attributes, creation_disposition, file_attributes, template_file);
+}
+
+static BOOL __stdcall delete_file_a(const void* name)
+{
+	return DeeleteFileA(name);
+}
+
+static DWORD __stdcall get_file_attributes_a(const void* name)
+{
+	return GetFileAttributesA(name);
+}
+
+static BOOL __stdcall get_file_attributes_ex_a(const void* name, GET_FILEEX_INFO_LEVELS info_level, void* information)
+{
+	return GetFileAttributesA(name, info_level, information);
+}
+
+static BOOL __stdcall move_file_a(const void* from, const void* to, DWORD flags)
+{
+	return MoveFileExA(from, to, flags);
+}
+
+static BOOL __stdcall set_file_attributes_a(const void* name, DWORD attributes)
+{
+	return SetFileAttributesA(name, attributes);
+}
+
+static char* string_duplicate_a(const char* string)
+{
+	return strdup(string);
+}
+
 zip_win32_file_operations_t ops_ansi = {
     ansi_allocate_tempname,
-    CreateFileA,
-    DeleteFileA,
-    GetFileAttributesA,
-    GetFileAttributesExA,
+    create_file_a,
+    delete_file_a,
+    get_file_attributes_a,
+    get_file_attributes_ex_a,
     ansi_make_tempname,
-    MoveFileExA,
-    SetFileAttributesA,
-    strdup
+    move_file_a,
+    set_file_attributes_a,
+    string_duplicate_a
 };
 
 /* clang-format on */
