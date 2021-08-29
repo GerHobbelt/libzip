@@ -37,6 +37,8 @@
 
 #include "zip_crypto.h"
 
+#if defined(HAVE_MBEDTLS)
+
 #include <mbedtls/ctr_drbg.h>
 #include <mbedtls/entropy.h>
 #include <mbedtls/pkcs5.h>
@@ -160,3 +162,5 @@ zip_secure_random(zip_uint8_t *buffer, zip_uint16_t length) {
 
     return mbedtls_ctr_drbg_random(&ctx->ctr_drbg, (unsigned char *)buffer, (size_t)length) == 0;
 }
+
+#endif

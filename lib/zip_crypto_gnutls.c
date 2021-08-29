@@ -37,6 +37,8 @@
 
 #include "zip_crypto.h"
 
+#if defined(HAVE_GNUTLS)
+
 _zip_crypto_aes_t *
 _zip_crypto_aes_new(const zip_uint8_t *key, zip_uint16_t key_size, zip_error_t *error) {
     _zip_crypto_aes_t *aes;
@@ -132,3 +134,5 @@ ZIP_EXTERN bool
 zip_secure_random(zip_uint8_t *buffer, zip_uint16_t length) {
     return gnutls_rnd(GNUTLS_RND_KEY, buffer, length) == 0;
 }
+
+#endif

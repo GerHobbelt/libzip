@@ -38,7 +38,11 @@
 #include "zip_crypto.h"
 
 #include <fcntl.h>
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
+
+#if defined(HAVE_COMMONCRYPTO)
 
 void
 _zip_crypto_aes_free(_zip_crypto_aes_t *aes) {
@@ -108,3 +112,5 @@ _zip_crypto_hmac_new(const zip_uint8_t *secret, zip_uint64_t secret_length, zip_
 
     return hmac;
 }
+
+#endif
