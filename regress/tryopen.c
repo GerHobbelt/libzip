@@ -49,8 +49,14 @@
     "\t-t\ttruncate file to size 0\n"
 
 
-int
-main(int argc, char *argv[]) {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zip_regress_try_open_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     const char *fname;
     zip_t *z;
     int c, flags, ze;

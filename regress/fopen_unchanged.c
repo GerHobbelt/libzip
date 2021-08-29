@@ -41,8 +41,14 @@
 const char *teststr = "This is a test.\n";
 const char *file = "teststring.txt";
 
-int
-main(int argc, char *argv[]) {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zip_regress_fopen_unchanged_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     const char *archive;
     zip_t *za;
     zip_source_t *zs;

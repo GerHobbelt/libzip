@@ -4,8 +4,14 @@
 
 /* fuzz target entry point, works without libFuzzer */
 
-int
-main(int argc, char **argv) {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zip_regress_fuzz_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     FILE *f;
     char *buf = NULL;
     long siz_buf;

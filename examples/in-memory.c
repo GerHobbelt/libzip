@@ -120,8 +120,14 @@ use_data(void *data, size_t size, const char *archive) {
 }
 
 
-int
-main(int argc, char *argv[]) {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zip_example_in_memory_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     const char *archive;
     zip_source_t *src;
     zip_t *za;

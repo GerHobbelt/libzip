@@ -135,8 +135,14 @@ usage(void) {
 }
 
 
-int
-main(int argc, char **argv) {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zip_regress_hole_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     zip_source_t *from;
     zip_source_t *to;
     int c, err;

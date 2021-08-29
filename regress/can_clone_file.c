@@ -52,8 +52,14 @@
 #include <unistd.h>
 #endif
 
-int
-main(int argc, char *argv[]) {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zip_regress_can_clone_file_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
 #ifdef HAVE_CLONEFILE
     struct statfs fs;
     struct attrlist attribute_list;

@@ -38,8 +38,14 @@
 const char *progname;
 #define USAGE "usage: %s archive index offset\n"
 
-int
-main(int argc, char *argv[]) {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zip_regress_fseek_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     int ze;
     zip_t *z;
     zip_file_t *zf;

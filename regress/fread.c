@@ -53,8 +53,14 @@ int verbose;
 const char *progname;
 #define USAGE "usage: %s [-v] archive\n"
 
-int
-main(int argc, char *argv[]) {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zip_regress_fread_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     int fail, ze;
     int c;
     zip_t *z;

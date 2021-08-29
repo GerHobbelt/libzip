@@ -235,8 +235,14 @@ int ignore_case, test_files, paranoid, verbose, have_directory, check_consistenc
 diff_output_t output;
 
 
-int
-main(int argc, char *const argv[]) {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zip_cmp_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     int c;
 
     progname = argv[0];

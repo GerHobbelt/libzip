@@ -40,8 +40,14 @@
 
 static const char *prg;
 
-int
-main(int argc, char *argv[]) {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zip_regress_add_from_filep_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     const char *archive;
     const char *file;
     const char *name;

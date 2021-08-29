@@ -83,8 +83,14 @@ static int confirm_replace(zip_t *, const char *, zip_uint64_t, zip_t *, const c
 static zip_t *merge_zip(zip_t *, const char *, const char *);
 
 
-int
-main(int argc, char *argv[]) {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zip_merge_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     zip_t *za;
     zip_t **zs;
     int c, err;

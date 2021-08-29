@@ -36,14 +36,23 @@
 #include <stdlib.h>
 #include <string.h>
 
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zip_regress_liboverride_main(cnt, arr)
+#endif
+
 #ifdef _WIN32
-int main(int argc, const char *argv[]) {
+
+int main(int argc, const char** argv)
+{
     /* Symbol override is not supported on Windows. */
     if (argc > 1 && strcmp(argv[1], "-v") == 0) {
         printf("not supported on Windows\n");
     }
     exit(1);
 }
+
 #else
 
 #include <errno.h>
@@ -55,8 +64,8 @@ int main(int argc, const char *argv[]) {
  Some systems bind functions called and defined within a shared library, so the override doesn't work. This program calls zip_open and checks whether the override worked.
  */
 
-int
-main(int argc, const char *argv[]) {
+int main(int argc, const char** argv)
+{
     int verbose = 0;
     int error_code;
     

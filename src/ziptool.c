@@ -868,8 +868,14 @@ ziptool_post_close(const char *archive) {
 }
 #endif
 
-int
-main(int argc, char *argv[]) {
+
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      zip_tool_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     const char *archive;
     unsigned int i;
     int c, arg, err, flags;
