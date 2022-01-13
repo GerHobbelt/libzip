@@ -171,7 +171,6 @@
 		4B3A5F531DF96EB4005A53A1 /* zip_ftell.c in Sources */ = {isa = PBXBuildFile; fileRef = 4B3A5F4E1DF96D83005A53A1 /* zip_ftell.c */; };
 		4B3FAE802385C5CC00192D6A /* zip_algorithm_xz.c in Sources */ = {isa = PBXBuildFile; fileRef = 4B3FAE7F2385C5A300192D6A /* zip_algorithm_xz.c */; };
 		4B3FAE822385C79200192D6A /* liblzma.5.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4B3FAE812385C79200192D6A /* liblzma.5.dylib */; };
-		4B5169A822A7993E00AA4340 /* zip_mkstempm.c in Sources */ = {isa = PBXBuildFile; fileRef = 4B5169A722A7993D00AA4340 /* zip_mkstempm.c */; };
 		4B51DDBA1FDAE20A00C5CA85 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4B01D70815B2F4CF002D5007 /* libz.dylib */; };
 		4B51DDBB1FDAE20A00C5CA85 /* libzip.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4B01D68B15B2F3F1002D5007 /* libzip.framework */; };
 		4B51DDC11FDAE25B00C5CA85 /* ziptool.c in Sources */ = {isa = PBXBuildFile; fileRef = 4BACD57C15BC2AEF00920691 /* ziptool.c */; };
@@ -623,7 +622,6 @@
 		4B41A2661FE15FCE005D8C91 /* clone-fs-delete.test */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "clone-fs-delete.test"; sourceTree = "<group>"; };
 		4B41A2671FE1604E005D8C91 /* clone-fs-replace.test */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "clone-fs-replace.test"; sourceTree = "<group>"; };
 		4B4CB5572483D7B7005C5428 /* nihtest.conf.in */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = nihtest.conf.in; sourceTree = "<group>"; };
-		4B5169A722A7993D00AA4340 /* zip_mkstempm.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip_mkstempm.c; sourceTree = "<group>"; };
 		4B51DDB21FDADEDF00C5CA85 /* INSTALL.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = INSTALL.md; sourceTree = "<group>"; };
 		4B51DDB31FDAE1DB00C5CA85 /* ziptool_regress.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ziptool_regress.c; sourceTree = "<group>"; };
 		4B51DDC01FDAE20A00C5CA85 /* ziptool_regress */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ziptool_regress; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1532,7 +1530,6 @@
 				4BCF3019199A2F820064207B /* zip_io_util.c */,
 				4B908F502385BE6C00886355 /* zip_libzip_version.c */,
 				4BDC721C15B1B25E00236D3C /* zip_memdup.c */,
-				4B5169A722A7993D00AA4340 /* zip_mkstempm.c */,
 				4BDC721D15B1B25E00236D3C /* zip_name_locate.c */,
 				4BDC721E15B1B25E00236D3C /* zip_new.c */,
 				4BDC721F15B1B25E00236D3C /* zip_open.c */,
@@ -2015,7 +2012,6 @@
 				4BCF302A199A2F820064207B /* zip_source_seek.c in Sources */,
 				4B01D6C515B2F46B002D5007 /* zip_fopen_index_encrypted.c in Sources */,
 				4B01D6C615B2F46B002D5007 /* zip_fopen_index.c in Sources */,
-				4B5169A822A7993E00AA4340 /* zip_mkstempm.c in Sources */,
 				4B69E6EE2032F18B0001EEE7 /* zip_winzip_aes.c in Sources */,
 				4B01D6C715B2F46B002D5007 /* zip_fopen.c in Sources */,
 				3D9284821C309510001EABA7 /* zip_hash.c in Sources */,
