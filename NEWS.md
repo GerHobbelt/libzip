@@ -1,8 +1,9 @@
 1.9.0 [202x-xx-xx]
 ==================
 
-* Add `zip_source_is_seekable()`.
+* Add `zip_file_is_seekable()`.
 * Improve compatibility with WinAES.
+* Fix encoding handling in `zip_name_locate()`.
 
 1.8.0 [2021-06-18]
 ==================
