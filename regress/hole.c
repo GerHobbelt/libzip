@@ -46,7 +46,7 @@
 
 zip_source_t *source_hole_create(const char *, int flags, zip_error_t *);
 
-const char *progname;
+static const char *progname;
 
 
 static int

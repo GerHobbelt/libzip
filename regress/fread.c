@@ -44,13 +44,13 @@
 
 enum when { WHEN_NEVER, WHEN_OPEN, WHEN_READ, WHEN_CLOSE };
 
-const char *when_name[] = {"no", "zip_fopen", "zip_fread", "zip_fclose"};
+static const char *when_name[] = {"no", "zip_fopen", "zip_fread", "zip_fclose"};
 
 static int do_read(zip_t *z, const char *name, zip_flags_t flags, enum when when_ex, int ze_ex, int se_ex);
 
-int verbose;
+static int verbose;
 
-const char *progname;
+static const char *progname;
 #define USAGE "usage: %s [-v] archive\n"
 
 

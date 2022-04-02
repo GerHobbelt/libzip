@@ -34,6 +34,8 @@
 
 #include "zipint.h"
 
+#if defined(HAVE_LIBLZMA)
+
 #include <limits.h>
 #ifdef HAVE_LZMA_H
 #include <lzma.h>
@@ -410,5 +412,7 @@ zip_compression_algorithm_t zip_algorithm_xz_decompress = {
     end_of_input,
     process
 };
+
+#endif  // HAVE_LIBLZMA
 
 /* clang-format on */

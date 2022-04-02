@@ -51,7 +51,7 @@ zip_t *ziptool_open(const char *archive, int flags, zip_error_t *error, zip_uint
 #include "ziptool.c"
 
 
-zip_source_t *memory_src = NULL;
+static zip_source_t *memory_src = NULL;
 
 zip_source_t *source_hole_create(const char *, int flags, zip_error_t *);
 
