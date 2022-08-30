@@ -10,7 +10,7 @@
 	</ItemDefinitionGroup>
 	<ItemDefinitionGroup>
 		<Link>
-			<AdditionalDependencies>$(MSBuildThisFileDirectory)lib\zip.lib;%(AdditionalDependencies)</AdditionalDependencies>
+			<AdditionalDependencies>$(MSBuildThisFileDirectory)lib\LibZip.$(Configuration).lib;%(AdditionalDependencies)</AdditionalDependencies>
 		</Link>
 	</ItemDefinitionGroup>
 </Project>

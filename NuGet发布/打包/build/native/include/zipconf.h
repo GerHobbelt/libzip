@@ -42,7 +42,4 @@ typedef uint64_t zip_uint64_t;
 #define ZIP_UINT64_MAX 0xffffffffffffffffULL
 
 #endif /* zipconf.h */
-#define LIBZIP_VERSION "1.9.2"
-#ifdef LIBZIP_EXPORT
-#define ZIP_EXTERN __declspec(dllexport)
-#endif
+#define ZIP_EXTERN

@@ -2,19 +2,20 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
 	<metadata>
 		<id>EbolaChan.LibZip</id>
-		<version>1.9.2.2</version>
-		<description>A C library for reading, creating, and modifying zip archives.</description>
+		<version>1.9.2.4</version>
+		<description>
+		A C library for reading, creating, and modifying zip archives.
+		目前仅支持 Debug/Release v143 x64 静态库，如需其它配置请上GitHub提Issue
+		</description>
 		<authors>Dieter Baron and Thomas Klausner, packed by 埃博拉酱</authors>
 		<projectUrl>https://github.com/Silver-Fang/libzip-NuGet</projectUrl>
-		<tags>native Release Static v143 x64</tags>
+		<tags>native Static v143 x64</tags>
 		<icon>图标.png</icon>
 		<license type="expression">MIT</license>
-		<summary>
-		A C library for reading, creating, and modifying zip archives.
-		目前仅支持 Release Static v143 x64 配置，如需其它配置请上我GitHub提Issue
-		</summary>
+		<summary>A C library for reading, creating, and modifying zip archives.</summary>
 		<releaseNotes>
-		仅支持 Release Static v143 x64 配置
+		支持Debug
+		修复头文件配置错误导致无法识别外部符号问题
 		</releaseNotes>
 	</metadata>
 	<!-- 不能指定files，否则只会包含files中的文件 -->

@@ -73,13 +73,13 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(ProjectDir)打包\build\native\lib\</OutDir>
-    <TargetName>zip</TargetName>
+    <TargetName>LibZip.$(Configuration)</TargetName>
     <ExternalIncludePath>$(ProjectDir)打包\build\native\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</ExternalIncludePath>
     <IncludePath>$(ProjectDir);$(SolutionDir)lib;$(SolutionDir)src;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(ProjectDir)打包\build\native\lib\</OutDir>
-    <TargetName>zip</TargetName>
+    <TargetName>LibZip.$(Configuration)</TargetName>
     <ExternalIncludePath>$(ProjectDir)打包\build\native\include;$(VC_IncludePath);$(WindowsSDK_IncludePath);</ExternalIncludePath>
     <IncludePath>$(ProjectDir);$(SolutionDir)lib;$(SolutionDir)src;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
   </PropertyGroup>
@@ -129,6 +129,7 @@
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <EnableModules>true</EnableModules>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -150,6 +151,7 @@
       <LanguageStandard_C>stdc17</LanguageStandard_C>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <EnableModules>true</EnableModules>
     </ClCompile>
     <Link>
       <SubSystem>

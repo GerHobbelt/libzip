@@ -54,3 +54,4 @@
 
 #endif /* HAD_CONFIG_H */
 #define strcasecmp stricmp
+#define LIBZIP_VERSION "1.9.2"
