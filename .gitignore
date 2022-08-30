@@ -9,3 +9,10 @@
 /.clangd
 /compile_commands.json
 /cmake-build-debug
+/.vs
+/NuGet发布/x64
+/out
+/NuGet发布/.vs
+/NuGet发布/打包/build/native/lib
+*.nupkg
+/packages
