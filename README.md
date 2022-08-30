@@ -1,3 +1,5 @@
+此分支发布在 NuGet EbolaChan.LibZip，GitHub上只有标签
+
 This is libzip, a C library for reading, creating, and modifying
 zip and zip64 archives. Files can be added from data buffers, files,
 or compressed data copied directly from other zip archives. Changes
