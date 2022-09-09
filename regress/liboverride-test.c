@@ -95,7 +95,7 @@ int main(int argc, const char** argv)
     if (zip_open("nosuchfile", 0, &error_code) != NULL) {
         /* We expect failure. */
         if (verbose) {
-            printf("open succeded\n");
+            printf("open succeeded\n");
         }
         exit(1);
     }

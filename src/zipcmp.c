@@ -158,7 +158,7 @@ static const enum_map_t extra_fields[] = {
     { 0x4453, "Windows NT security descriptor" },
     { 0x4704, "VM/CMS" },
     { 0x470f, "MVS" },
-    { 0x4854, "Theos, old inofficial port" },
+    { 0x4854, "Theos, old unofficial port" },
     { 0x4b46, "FWKCS MD5" },
     { 0x4c41, "OS/2 access control list (text ACL)" },
     { 0x4d49, "Info-ZIP OpenVMS (obsolete)" },
@@ -380,7 +380,7 @@ compare_zip(const char *const zn[]) {
     }
 
     if (summary) {
-	printf("%d files added, %d files removed\n", plus_count, minus_count);
+	printf("%d files removed, %d files added\n", minus_count, plus_count);
     }
 
     switch (res) {
