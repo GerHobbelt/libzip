@@ -6,7 +6,7 @@ if (${CMAKE_VERSION} VERSION_LESS "3.17.0")
 endif()
 
 project(libzip
-  VERSION 1.8.0
+  VERSION 1.9.0
   LANGUAGES C)
 
 option(ENABLE_COMMONCRYPTO "Enable use of CommonCrypto" ON)
@@ -225,7 +225,7 @@ elseif (MBEDTLS_FOUND)
   set(HAVE_MBEDTLS 1)
 endif()
 
-if (NOT HAVE_CRYPTO)
+if ((ENABLE_COMMONCRYPTO OR ENABLE_GNUTLS OR ENABLE_MBEDTLS OR ENABLE_OPENSSL OR ENABLE_WINDOWS_CRYPTO) AND NOT HAVE_CRYPTO)
   message(WARNING "-- neither Common Crypto, GnuTLS, mbed TLS, OpenSSL, nor Windows Cryptography found; AES support disabled")
 endif()
 
@@ -270,7 +270,7 @@ endif()
 
 include(FindPerl)
 
-if(NOT PERL_FOUND)
+if(BUILD_REGRESS AND NOT PERL_FOUND)
   message(WARNING "-- perl not found, regression testing disabled")
   set(BUILD_REGRESS OFF)
 endif()
@@ -449,4 +449,3 @@ if(LIBZIP_DO_INSTALL)
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
     )
 endif()
-
