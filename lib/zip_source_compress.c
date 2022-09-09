@@ -240,7 +240,7 @@ compress_read(zip_source_t *src, struct context *ctx, void *data, zip_uint64_t l
             if (ctx->can_store && (zip_uint64_t)ctx->first_read <= out_offset) {
                 ctx->is_stored = true;
                 ctx->size = (zip_uint64_t)ctx->first_read;
-                memcpy(data, ctx->buffer, ctx->size);
+                (void)memcpy_s(data, len, ctx->buffer, ctx->size);
                 return (zip_int64_t)ctx->size;
             }
             end = true;
@@ -389,7 +389,7 @@ compress_callback(zip_source_t *src, void *ud, void *data, zip_uint64_t len, zip
     }
 
     case ZIP_SOURCE_SUPPORTS:
-        return ZIP_SOURCE_SUPPORTS_READABLE | zip_source_make_command_bitmap(ZIP_SOURCE_GET_FILE_ATTRIBUTES, -1);
+        return ZIP_SOURCE_SUPPORTS_READABLE | zip_source_make_command_bitmap(ZIP_SOURCE_GET_FILE_ATTRIBUTES, ZIP_SOURCE_SUPPORTS_REOPEN, -1);
 
     default:
         zip_error_set(&ctx->error, ZIP_ER_INTERNAL, 0);

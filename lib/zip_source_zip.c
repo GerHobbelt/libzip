@@ -49,8 +49,8 @@ ZIP_EXTERN zip_source_t *zip_source_zip_create(zip_t *srcza, zip_uint64_t srcidx
         flags |= ZIP_FL_COMPRESSED;
     else
         flags &= ~ZIP_FL_COMPRESSED;
-    
-    return _zip_source_zip_new(srcza, srcidx, flags, start, (zip_uint64_t)len, NULL, error);
+
+    return _zip_source_zip_new(srcza, srcidx, flags, start, (zip_uint64_t)len, srcza->default_password, error);
 }
 
 

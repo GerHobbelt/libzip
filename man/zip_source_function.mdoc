@@ -29,7 +29,7 @@
 .\" OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 .\" IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.Dd April 17, 2020
+.Dd June 28, 2022
 .Dt ZIP_SOURCE_FUNCTION 3
 .Os
 .Sh NAME
@@ -49,7 +49,7 @@ The functions
 .Fn zip_source_function
 and
 .Fn zip_source_function_create
-creates a zip source from the user-provided function
+create a zip source from the user-provided function
 .Ar fn ,
 which must be of the following type:
 .Pp
@@ -109,6 +109,13 @@ Must additionally support
 .Dv ZIP_SOURCE_TELL_WRITE ,
 and
 .Dv ZIP_SOURCE_REMOVE .
+.Pp
+On top of the above, supporting the pseudo-command
+.Dv ZIP_SOURCE_SUPPORTS_REOPEN
+allows calling
+.Fn zip_source_open
+again after calling
+.Fn zip_source_close .
 .El
 .Ss Dv ZIP_SOURCE_ACCEPT_EMPTY
 Return 1 if an empty source should be accepted as a valid zip archive.
@@ -300,6 +307,9 @@ Return the current write offset in the source, like
 .Ss Dv ZIP_SOURCE_WRITE
 Write data to the source.
 Return number of bytes written.
+.Ss Dv ZIP_SOURCE_SUPPORTS_REOPEN
+This command is never actually invoked, support for it signals the
+ability to handle multiple open/read/close cycles.
 .Ss Return Values
 Commands should return \-1 on error.
 .Dv ZIP_SOURCE_ERROR

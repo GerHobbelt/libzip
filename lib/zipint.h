@@ -180,6 +180,7 @@ zip_source_t *zip_source_pkware_decode(zip_t *, zip_source_t *, zip_uint16_t, in
 zip_source_t *zip_source_pkware_encode(zip_t *, zip_source_t *, zip_uint16_t, int, const char *);
 int zip_source_remove(zip_source_t *);
 zip_int64_t zip_source_supports(zip_source_t *src);
+bool zip_source_supports_reopen(zip_source_t *src);
 zip_source_t *zip_source_winzip_aes_decode(zip_t *, zip_source_t *, zip_uint16_t, int, const char *);
 zip_source_t *zip_source_winzip_aes_encode(zip_t *, zip_source_t *, zip_uint16_t, int, const char *);
 zip_source_t *zip_source_buffer_with_attributes(zip_t *za, const void *data, zip_uint64_t len, int freep, zip_file_attributes_t *attributes);
@@ -307,7 +308,6 @@ struct zip {
 struct zip_file {
     zip_t *za;         /* zip archive containing this file */
     zip_error_t error; /* error information */
-    bool eof;
     zip_source_t *src; /* data source */
 };
 
@@ -531,6 +531,7 @@ void _zip_dirent_finalize(zip_dirent_t *);
 void _zip_dirent_init(zip_dirent_t *);
 bool _zip_dirent_needs_zip64(const zip_dirent_t *, zip_flags_t);
 zip_dirent_t *_zip_dirent_new(void);
+bool zip_dirent_process_ef_zip64(zip_dirent_t * zde, const zip_uint8_t * ef, zip_uint64_t got_len, bool local, zip_error_t * error);
 zip_int64_t _zip_dirent_read(zip_dirent_t *zde, zip_source_t *src, zip_buffer_t *buffer, bool local, zip_error_t *error);
 void _zip_dirent_set_version_needed(zip_dirent_t *de, bool force_zip64);
 zip_int32_t _zip_dirent_size(zip_source_t *src, zip_uint16_t, zip_error_t *);

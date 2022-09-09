@@ -133,7 +133,7 @@ int main(int argc, const char** argv)
             fail++;
         }
         else {
-            fail += do_read(z, "storedok", 0, WHEN_OPEN, ZIP_ER_CHANGED, 0);
+            fail += do_read(z, "storedok", 0, WHEN_NEVER, 0, 0);
             fail += do_read(z, "storedok", ZIP_FL_UNCHANGED, WHEN_NEVER, 0, 0);
         }
     }
@@ -157,7 +157,7 @@ int main(int argc, const char** argv)
         fail++;
     }
     else {
-        fail += do_read(z, "new_file", 0, WHEN_OPEN, ZIP_ER_CHANGED, 0);
+        fail += do_read(z, "new_file", 0, WHEN_NEVER, 0, 0);
     }
 
     zip_unchange_all(z);
