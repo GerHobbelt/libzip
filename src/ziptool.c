@@ -33,6 +33,8 @@
 
 #include "config.h"
 
+#include "compat.h"
+
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -55,8 +57,6 @@
 extern int optopt;
 
 #include "zip.h"
-
-#include "compat.h"
 
 typedef struct dispatch_table_s {
     const char *cmdline_name;
@@ -632,7 +632,7 @@ zstat(const char *argv[]) {
     if (sb.valid & ZIP_STAT_MTIME) {
         struct tm *tpm;
         struct tm tm;
-        tpm = localtime_s(&sb.mtime, &tm);
+        tpm = zip_localtime(&sb.mtime, &tm);
         if (tpm == NULL) {
             printf("mtime: <not valid>\n");
         }
