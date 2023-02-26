@@ -58,11 +58,15 @@ ZIP_EXTERN zip_source_t *zip_source_zip_file_create(zip_t *srcza, zip_uint64_t s
         return NULL;
     }
 
+    if (flags & ZIP_FL_ENCRYPTED) {
+        flags |= ZIP_FL_COMPRESSED;
+    }
+
     changed_data = false;
     if ((flags & ZIP_FL_UNCHANGED) == 0) {
         zip_entry_t *entry = srcza->entry + srcidx;
         if (ZIP_ENTRY_DATA_CHANGED(entry)) {
-            if (!zip_source_supports_reopen(entry->source)) {
+            if ((flags & ZIP_FL_COMPRESSED) || !zip_source_supports_reopen(entry->source)) {
                 zip_error_set(error, ZIP_ER_CHANGED, 0);
                 return NULL;
             }
@@ -83,10 +87,6 @@ ZIP_EXTERN zip_source_t *zip_source_zip_file_create(zip_t *srcza, zip_uint64_t s
     if (zip_stat_index(srcza, srcidx, stat_flags, &st) < 0) {
         zip_error_set(error, ZIP_ER_INTERNAL, 0);
         return NULL;
-    }
-
-    if (flags & ZIP_FL_ENCRYPTED) {
-        flags |= ZIP_FL_COMPRESSED;
     }
 
     if ((start > 0 || len >= 0) && (flags & ZIP_FL_COMPRESSED)) {
@@ -200,7 +200,7 @@ ZIP_EXTERN zip_source_t *zip_source_zip_file_create(zip_t *srcza, zip_uint64_t s
             st2.valid |= ZIP_STAT_MTIME;
         }
 
-        if ((src = _zip_source_window_new(src, start, data_len, &st2, &attributes, source_archive, source_index, error)) == NULL) {
+        if ((src = _zip_source_window_new(src, start, data_len, &st2, ZIP_STAT_NAME, &attributes, source_archive, source_index, error)) == NULL) {
             return NULL;
         }
     }
@@ -219,7 +219,7 @@ ZIP_EXTERN zip_source_t *zip_source_zip_file_create(zip_t *srcza, zip_uint64_t s
            attributes and to have a source that positions the read
            offset properly before each read for multiple zip_file_t
            referring to the same underlying source */
-        if ((src =  _zip_source_window_new(srcza->src, 0, (zip_int64_t)st.comp_size, &st, &attributes, srcza, srcidx, error)) == NULL) {
+        if ((src =  _zip_source_window_new(srcza->src, 0, (zip_int64_t)st.comp_size, &st, ZIP_STAT_NAME, &attributes, srcza, srcidx, error)) == NULL) {
             return NULL;
         }
     }
@@ -235,7 +235,7 @@ ZIP_EXTERN zip_source_t *zip_source_zip_file_create(zip_t *srcza, zip_uint64_t s
            attributes and to have a source that positions the read
            offset properly before each read for multiple zip_file_t
            referring to the same underlying source */
-        if ((src = _zip_source_window_new(src, 0, data_len, &st, &attributes, NULL, 0, error)) == NULL) {
+        if ((src = _zip_source_window_new(src, 0, data_len, &st, ZIP_STAT_NAME, &attributes, NULL, 0, error)) == NULL) {
             return NULL;
         }
     }
@@ -292,7 +292,7 @@ ZIP_EXTERN zip_source_t *zip_source_zip_file_create(zip_t *srcza, zip_uint64_t s
             st2.valid = ZIP_STAT_SIZE;
             st2.size = (zip_uint64_t)data_len;
         }
-        s2 = _zip_source_window_new(src, start, data_len, &st2, 0, NULL, 0, error);
+        s2 = _zip_source_window_new(src, start, data_len, &st2, ZIP_STAT_NAME, NULL, NULL, 0, error);
         if (s2 == NULL) {
             zip_source_free(src);
             return NULL;
