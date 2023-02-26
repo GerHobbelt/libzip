@@ -1,3 +1,4 @@
+.\" Automatically generated from an mdoc input file.  Do not edit.
 .\" zip_source_layered.mdoc -- create layered source from function
 .\" Copyright (C) 2004-2022 Dieter Baron and Thomas Klausner
 .\"
@@ -29,135 +30,140 @@
 .\" OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 .\" IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .\"
-.Dd December 5, 2022
-.Dt ZIP_SOURCE_LAYERED 3
-.Os
-.Sh NAME
-.Nm zip_source_layered ,
-.Nm zip_source_layered_create
-.Nd create layered data source from function
-.Sh LIBRARY
+.TH "ZIP_SOURCE_LAYERED" "3" "December 5, 2022" "NiH" "Library Functions Manual"
+.nh
+.if n .ad l
+.SH "NAME"
+\fBzip_source_layered\fR,
+\fBzip_source_layered_create\fR
+\- create layered data source from function
+.SH "LIBRARY"
 libzip (-lzip)
-.Sh SYNOPSIS
-.In zip.h
-.Ft zip_source_t *
-.Fn zip_source_layered "zip_t *archive" "zip_source_t *source" "zip_source_layered_callback fn" "void *userdata"
-.Ft zip_source_t *
-.Fn zip_source_layered_create "zip_source_t *source" "zip_source_layered_callback fn" "void *userdata" "zip_error_t *error"
-.Sh DESCRIPTION
+.SH "SYNOPSIS"
+\fB#include <zip.h>\fR
+.sp
+\fIzip_source_t *\fR
+.br
+.PD 0
+.HP 4n
+\fBzip_source_layered\fR(\fIzip_t\ *archive\fR, \fIzip_source_t\ *source\fR, \fIzip_source_layered_callback\ fn\fR, \fIvoid\ *userdata\fR);
+.PD
+.PP
+\fIzip_source_t *\fR
+.br
+.PD 0
+.HP 4n
+\fBzip_source_layered_create\fR(\fIzip_source_t\ *source\fR, \fIzip_source_layered_callback\ fn\fR, \fIvoid\ *userdata\fR, \fIzip_error_t\ *error\fR);
+.PD
+.SH "DESCRIPTION"
 The functions
-.Fn zip_source_layered
+\fBzip_source_layered\fR()
 and
-.Fn zip_source_layered_create
+\fBzip_source_layered_create\fR()
 create a layered zip source from the user-provided function
-.Ar fn ,
+\fIfn\fR,
 which must be of the following type:
-.Pp
-.Ft typedef zip_int64_t
-.Fo \fR(*\zip_source_layered_callback\fR)\fP
-.Fa "zip_source_t *source" "void *userdata" "void *data" "zip_uint64_t length" "zip_source_cmd_t cmd"
-.Fc
-.Pp
-.Ar archive
+.PP
+\fItypedef zip_int64_t\fR
+\fB\fR(*\zip_source_layered_callback\fR)\fP\fR(\fIzip_source_t\ *source\fR, \fIvoid\ *userdata\fR, \fIvoid\ *data\fR, \fIzip_uint64_t\ length\fR, \fIzip_source_cmd_t\ cmd\fR)
+.PP
+\fIarchive\fR
 or
-.Ar error
+\fIerror\fR
 are used for reporting errors and can be
-.Dv NULL .
-.Pp
+\fRNULL\fR.
+.PP
 When called by the library, the first argument is the
-.Ar source
+\fIsource\fR
 of the lower layer, the second argument is the
-.Ar userdata
+\fIuserdata\fR
 argument supplied to the function.
 The next two arguments are a buffer
-.Ar data
+\fIdata\fR
 of size
-.Ar length
+\fIlength\fR
 when data is passed in or expected to be returned, or else
-.Dv NULL
+\fRNULL\fR
 and 0.
 The last argument,
-.Ar cmd ,
+\fIcmd\fR,
 specifies which action the function should perform.
-.Pp
+.PP
 See
-.Xr zip_source_function 3
+zip_source_function(3)
 for a description of the commands.
-.Pp
+.PP
 A layered source transforms the data or metadata of the source below in some way.
 Layered sources can't support writing and are not sufficient to cleanly add support for additional compression or encryption methods.
 This may be revised in a later release of libzip.
-.Pp
+.PP
 The interaction with the lower layer depends on the command:
-.El
-.Ss Dv ZIP_SOURCE_ACCEPT_EMPTY
+.SS "\fRZIP_SOURCE_ACCEPT_EMPTY\fR"
 If the layered source supports this command, the lower layer is not called automatically.
 Otherwise, the return value of the lower source is used.
-.Ss Dv ZIP_SOURCE_CLOSE
+.SS "\fRZIP_SOURCE_CLOSE\fR"
 The lower layer is closed after the callback returns.
-.Ss Dv ZIP_SOURCE_ERROR
+.SS "\fRZIP_SOURCE_ERROR\fR"
 The lower layer is not called automatically.
 If you need to retrieve error information from the lower layer, use
-.Xr zip_error_set_from_source 3
+zip_error_set_from_source(3)
 or
-.Xr zip_source_pass_to_lower_layer 3 .
-.Ss Dv ZIP_SOURCE_FREE
+zip_source_pass_to_lower_layer(3).
+.SS "\fRZIP_SOURCE_FREE\fR"
 The lower layer is freed after the callback returns.
-.Ss Dv ZIP_SOURCE_GET_FILE_ATTRIBUTES
+.SS "\fRZIP_SOURCE_GET_FILE_ATTRIBUTES\fR"
 The attributes of the lower layer are merged with the attributes returned by the callback: information set by the callback wins over the lower layer, with the following exceptions: the higher
-.Ar version_needed
+\fIversion_needed\fR
 is used, and
-.Ar general_purpose_bit_flags
+\fIgeneral_purpose_bit_flags\fR
 are only overwritten if the corresponding bit is set in
-.Ar general_purpose_bit_mask .
-.Ss Dv ZIP_SOURCE_OPEN
+\fIgeneral_purpose_bit_mask\fR.
+.SS "\fRZIP_SOURCE_OPEN\fR"
 The lower layer is opened before the callback is called.
-.Ss Dv ZIP_SOURCE_READ
+.SS "\fRZIP_SOURCE_READ\fR"
 The lower layer is not called automatically.
-.Ss Dv ZIP_SOURCE_SEEK
+.SS "\fRZIP_SOURCE_SEEK\fR"
 The lower layer is not called automatically.
-.Ss Dv ZIP_SOURCE_STAT
-.Ar data
+.SS "\fRZIP_SOURCE_STAT\fR"
+\fIdata\fR
 contains the stat information from the lower layer when the callback is called.
-.Ss Dv ZIP_SOURCE_SUPPORTS
-.Ar data
+.SS "\fRZIP_SOURCE_SUPPORTS\fR"
+\fIdata\fR
 contains the bitmap of commands supported by the lower layer when the callback is called.
 Since layered sources can't support writing, all commands related to writing are stripped from the returned support bitmap.
-.Ss Dv ZIP_SOURCE_TELL
+.SS "\fRZIP_SOURCE_TELL\fR"
 The lower layer is not called automatically.
-.Sh RETURN VALUES
+.SH "RETURN VALUES"
 Upon successful completion, the created source is returned.
 Otherwise,
-.Dv NULL
+\fRNULL\fR
 is returned and the error code in
-.Ar archive
+\fIarchive\fR
 or
-.Ar error
+\fIerror\fR
 is set to indicate the error (unless
 it is
-.Dv NULL ) .
-.Sh ERRORS
-.Fn zip_source_layered
+\fRNULL\fR).
+.SH "ERRORS"
+\fBzip_source_layered\fR()
 fails if:
-.Bl -tag -width Er
-.It Bq Er ZIP_ER_MEMORY
+.TP 19n
+[\fRZIP_ER_MEMORY\fR]
 Required memory could not be allocated.
-.El
-.Sh SEE ALSO
-.Xr libzip 3 ,
-.Xr zip_file_add 3 ,
-.Xr zip_file_attributes_init 3 ,
-.Xr zip_file_replace 3 ,
-.Xr zip_source 3 ,
-.Xr zip_source_function 3 ,
-.Xr zip_source_pass_to_lower_layer 3
-.Sh HISTORY
-.Fn zip_source_layered
+.SH "SEE ALSO"
+libzip(3),
+zip_file_add(3),
+zip_file_attributes_init(3),
+zip_file_replace(3),
+zip_source(3),
+zip_source_function(3),
+zip_source_pass_to_lower_layer(3)
+.SH "HISTORY"
+\fBzip_source_layered\fR()
 and
-.Fn zip_source_layered_create
+\fBzip_source_layered_create\fR()
 were added in libzip 1.10.
-.Sh AUTHORS
-.An -nosplit
-.An Dieter Baron Aq Mt dillo@nih.at
+.SH "AUTHORS"
+Dieter Baron <\fIdillo@nih.at\fR>
 and
-.An Thomas Klausner Aq Mt tk@giga.or.at
+Thomas Klausner <\fItk@giga.or.at\fR>
