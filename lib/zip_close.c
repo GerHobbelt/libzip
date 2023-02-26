@@ -62,8 +62,8 @@ zip_close(zip_t *za) {
 
     changed = _zip_changed(za, &survivors);
 
-    /* don't create zip files with no entries */
-    if (survivors == 0) {
+    if (survivors == 0 && !(za->ch_flags & ZIP_AFL_CREATE_OR_KEEP_FILE_FOR_EMPTY_ARCHIVE)) {
+        /* don't create zip files with no entries */
         if ((za->open_flags & ZIP_TRUNCATE) || changed) {
             if (zip_source_remove(za->src) < 0) {
                 if (!((zip_error_code_zip(zip_source_error(za->src)) == ZIP_ER_REMOVE) && (zip_error_code_system(zip_source_error(za->src)) == ENOENT))) {
@@ -76,7 +76,8 @@ zip_close(zip_t *za) {
         return 0;
     }
 
-    if (!changed) {
+    /* Always write empty archive if we are told to keep it, otherwise it wouldn't be created if the file doesn't already exist. */
+    if (!changed && survivors > 0) {
         zip_discard(za);
         return 0;
     }
@@ -217,7 +218,7 @@ zip_close(zip_t *za) {
 
             zs = NULL;
             if (!ZIP_ENTRY_DATA_CHANGED(entry)) {
-                if ((zs = _zip_source_zip_new(za, i, ZIP_FL_UNCHANGED, 0, 0, NULL, &za->error)) == NULL) {
+                if ((zs = zip_source_zip_file_create(za, i, ZIP_FL_UNCHANGED, 0, -1, NULL, &za->error)) == NULL) {
                     error = 1;
                     break;
                 }
@@ -409,7 +410,6 @@ add_data(zip_t *za, zip_source_t *src, zip_dirent_t *de, zip_uint32_t changed) {
             return -1;
         }
 
-        zip_source_free(src_final);
         src_final = src_tmp;
     }
 
@@ -419,7 +419,6 @@ add_data(zip_t *za, zip_source_t *src, zip_dirent_t *de, zip_uint32_t changed) {
             return -1;
         }
 
-        zip_source_free(src_final);
         src_final = src_tmp;
     }
 
@@ -429,7 +428,6 @@ add_data(zip_t *za, zip_source_t *src, zip_dirent_t *de, zip_uint32_t changed) {
             return -1;
         }
 
-        zip_source_free(src_final);
         src_final = src_tmp;
     }
 
@@ -439,7 +437,6 @@ add_data(zip_t *za, zip_source_t *src, zip_dirent_t *de, zip_uint32_t changed) {
             return -1;
         }
 
-        zip_source_free(src_final);
         src_final = src_tmp;
     }
 
@@ -474,7 +471,6 @@ add_data(zip_t *za, zip_source_t *src, zip_dirent_t *de, zip_uint32_t changed) {
                     zip_source_free(src_final);
                     return -1;
                 }
-                zip_source_free(src_final);
                 src_final = src_tmp;
             }
         }
@@ -485,7 +481,6 @@ add_data(zip_t *za, zip_source_t *src, zip_dirent_t *de, zip_uint32_t changed) {
             return -1;
         }
 
-        zip_source_free(src_final);
         src_final = src_tmp;
     }
 

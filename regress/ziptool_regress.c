@@ -90,7 +90,7 @@ add_nul(const char *argv[]) {
         return -1;
     }
 
-    if (zip_add(za, argv[0], zs) == -1) {
+    if (zip_file_add(za, argv[0], zs, 0) == -1) {
         zip_source_free(zs);
         fprintf(stderr, "can't add file '%s': %s\n", argv[0], zip_strerror(za));
         return -1;

@@ -110,7 +110,7 @@ cat_impl(zip_uint64_t idx, zip_uint64_t start, zip_uint64_t len) {
         }
         len = sb.size;
     }
-    if ((src = zip_source_zip_create(za, idx, 0, start, len, &error)) == NULL) {
+    if ((src = zip_source_zip_file_create(za, idx, 0, start, len, NULL, &error)) == NULL) {
         fprintf(stderr, "can't open file at index '%" PRIu64 "': %s\n", idx, zip_error_strerror(&error));
         zip_error_fini(&error);
         return -1;
@@ -153,7 +153,7 @@ add(const char *argv[]) {
         return -1;
     }
 
-    if (zip_add(za, argv[0], zs) == -1) {
+    if (zip_file_add(za, argv[0], zs, 0) == -1) {
         zip_source_free(zs);
         fprintf(stderr, "can't add file '%s': %s\n", argv[0], zip_strerror(za));
         return -1;
@@ -164,7 +164,7 @@ add(const char *argv[]) {
 static int
 add_dir(const char *argv[]) {
     /* add directory */
-    if (zip_add_dir(za, argv[0]) < 0) {
+    if (zip_dir_add(za, argv[0], 0) < 0) {
         fprintf(stderr, "can't add directory '%s': %s\n", argv[0], zip_strerror(za));
         return -1;
     }
@@ -190,7 +190,7 @@ add_file(const char *argv[]) {
         }
     }
 
-    if (zip_add(za, argv[0], zs) == -1) {
+    if (zip_file_add(za, argv[0], zs, 0) == -1) {
         zip_source_free(zs);
         fprintf(stderr, "can't add file '%s': %s\n", argv[0], zip_strerror(za));
         return -1;
@@ -204,6 +204,7 @@ add_from_zip(const char *argv[]) {
     zip_int64_t len;
     int err;
     zip_source_t *zs;
+    zip_flags_t flags = 0;
     /* add from another zip file */
     idx = strtoull(argv[2], NULL, 10);
     start = strtoull(argv[3], NULL, 10);
@@ -215,12 +216,15 @@ add_from_zip(const char *argv[]) {
         zip_error_fini(&error);
         return -1;
     }
-    if ((zs = zip_source_zip(za, z_in[z_in_count], idx, 0, start, len)) == NULL) {
+    if (start == 0 && len == -1) {
+        flags = ZIP_FL_COMPRESSED;
+    }
+    if ((zs = zip_source_zip_file(za, z_in[z_in_count], idx, flags, start, len, NULL)) == NULL) {
         fprintf(stderr, "error creating file source from '%s' index '%" PRIu64 "': %s\n", argv[1], idx, zip_strerror(za));
         zip_close(z_in[z_in_count]);
         return -1;
     }
-    if (zip_add(za, argv[0], zs) == -1) {
+    if (zip_file_add(za, argv[0], zs, 0) == -1) {
         fprintf(stderr, "can't add file '%s': %s\n", argv[0], zip_strerror(za));
         zip_source_free(zs);
         zip_close(z_in[z_in_count]);
@@ -403,18 +407,18 @@ get_extra_by_id(const char *argv[]) {
 static int
 get_file_comment(const char *argv[]) {
     const char *comment;
-    int len;
+    zip_uint32_t len;
     zip_uint64_t idx;
     /* get file comment */
     idx = strtoull(argv[0], NULL, 10);
-    if ((comment = zip_get_file_comment(za, idx, &len, 0)) == NULL) {
+    if ((comment = zip_file_get_comment(za, idx, &len, 0)) == NULL) {
         fprintf(stderr, "can't get comment for '%s': %s\n", zip_get_name(za, idx, 0), zip_strerror(za));
         return -1;
     }
     else if (len == 0)
         printf("No comment for '%s'\n", zip_get_name(za, idx, 0));
     else
-        printf("File comment for '%s': %.*s\n", zip_get_name(za, idx, 0), len, comment);
+        printf("File comment for '%s': %.*s\n", zip_get_name(za, idx, 0), (int)len, comment);
     return 0;
 }
 
@@ -468,7 +472,7 @@ static int
 zrename(const char *argv[]) {
     zip_uint64_t idx;
     idx = strtoull(argv[0], NULL, 10);
-    if (zip_rename(za, idx, argv[1]) < 0) {
+    if (zip_file_rename(za, idx, argv[1], 0) < 0) {
         fprintf(stderr, "can't rename file at index '%" PRIu64 "' to '%s': %s\n", idx, argv[1], zip_strerror(za));
         return -1;
     }
@@ -694,6 +698,9 @@ static int parse_archive_flag(const char* arg) {
     }
     else if (strcasecmp(arg, "want-torrentzip") == 0) {
         return ZIP_AFL_WANT_TORRENTZIP;
+    }
+    else if (strcasecmp(arg, "create-or-keep-file-for-empty-archive") == 0) {
+        return ZIP_AFL_CREATE_OR_KEEP_FILE_FOR_EMPTY_ARCHIVE;
     }
     return -1;
 }
@@ -930,6 +937,11 @@ usage(const char *progname, const char *reason) {
                  "\tr\tZIP_FL_ENC_RAW\n"
                  "\ts\tZIP_FL_ENC_STRICT\n"
                  "\tu\tZIP_FL_UNCHANGED\n");
+    fprintf(out, "\nSupported archive flags are:\n"
+	         "\tcreate-or-keep-empty-file-for-archive\n"
+	         "\tis-torrentzip\n"
+	         "\trdonly\n"
+	         "\twant-torrentzip\n");
     fprintf(out, "\nSupported compression methods are:\n"
                  "\tdefault\n");
     if (zip_compression_method_supported(ZIP_CM_BZIP2, 1)) {

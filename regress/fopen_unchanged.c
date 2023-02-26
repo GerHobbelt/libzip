@@ -74,7 +74,7 @@ int main(int argc, const char** argv)
         exit(1);
     }
 
-    if (zip_add(za, file, zs) == -1) {
+    if (zip_file_add(za, file, zs, 0) == -1) {
         fprintf(stderr, "can't add file '%s': %s\n", file, zip_strerror(za));
         (void)zip_source_free(zs);
         (void)zip_close(za);
