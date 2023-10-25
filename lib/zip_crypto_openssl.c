@@ -44,17 +44,13 @@
 #include <openssl/rand.h>
 
 #ifdef USE_OPENSSL_3_API
-struct _zip_crypto_hmac_t {
-    EVP_MAC *mac;
-    EVP_MAC_CTX *ctx;
-};
-
 static _zip_crypto_hmac_t* hmac_new() {
     _zip_crypto_hmac_t *hmac = (_zip_crypto_hmac_t*)malloc(sizeof(*hmac));
     if (hmac != NULL) {
         hmac->mac = NULL;
         hmac->ctx = NULL;
     }
+    return hmac;
 }
 static void hmac_free(_zip_crypto_hmac_t* hmac) {
     if (hmac != NULL) {
@@ -152,7 +148,7 @@ _zip_crypto_hmac_new(const zip_uint8_t *secret, zip_uint64_t secret_length, zip_
 
 #ifdef USE_OPENSSL_3_API
     if ((hmac = hmac_new()) == NULL
-        || (hmac->mac = EVP_MAC_fetch(NULL, "HMAC", "provider=fips")) == NULL
+        || (hmac->mac = EVP_MAC_fetch(NULL, "HMAC", "provider=default")) == NULL
         || (hmac->ctx = EVP_MAC_CTX_new(hmac->mac)) == NULL) {
         hmac_free(hmac);
         zip_error_set(error, ZIP_ER_MEMORY, 0);
@@ -161,7 +157,7 @@ _zip_crypto_hmac_new(const zip_uint8_t *secret, zip_uint64_t secret_length, zip_
 
     {
         OSSL_PARAM params[2];
-        params[0] = OSSL_PARAM_construct_utf8_string("digest", "sha1", 0);
+        params[0] = OSSL_PARAM_construct_utf8_string("digest", "SHA1", 0);
         params[1] = OSSL_PARAM_construct_end();
 
         if (!EVP_MAC_init(hmac->ctx, (const unsigned char *)secret, secret_length, params)) {
