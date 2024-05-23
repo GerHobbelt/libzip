@@ -39,9 +39,6 @@
 
 #include "zip_crypto.h"
 
-#define WIN32_LEAN_AND_MEAN
-#define NOCRYPT
-
 #include <windows.h>
 
 #include <bcrypt.h>

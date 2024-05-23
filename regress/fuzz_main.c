@@ -1,8 +1,10 @@
-#include "fuzzers/zip_read_fuzzer.cc"
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 /* fuzz target entry point, works without libFuzzer */
+
+extern int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size);
 
 
 
@@ -12,7 +14,7 @@
 
 int main(int argc, const char** argv)
 {
-    FILE *f;
+    FILE *f = NULL;
     char *buf = NULL;
     long siz_buf;
 
@@ -33,6 +35,7 @@ int main(int argc, const char** argv)
     rewind(f);
 
     if (siz_buf < 1) {
+        fprintf(stderr, "zero-byte file not supported\n");
         goto err;
     }
 
@@ -49,7 +52,10 @@ int main(int argc, const char** argv)
 
     (void)LLVMFuzzerTestOneInput((uint8_t *)buf, siz_buf);
 
-err:
+ err:
+    if (f) {
+        fclose(f);
+    }
     free(buf);
 
     return 0;
