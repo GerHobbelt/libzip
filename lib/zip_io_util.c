@@ -42,6 +42,7 @@
 #endif
 #ifdef HAVE_ZLIB_NG_H
 #include <zlib-ng.h>
+#define crc32 zng_crc32
 #endif
 
 int

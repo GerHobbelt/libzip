@@ -45,6 +45,7 @@
 #endif
 #ifdef HAVE_ZLIB_NG_H
 #include <zlib-ng.h>
+#define crc32		zng_crc32
 #endif
 
 static zip_string_t *_zip_dirent_process_ef_utf_8(const zip_dirent_t *de, zip_uint16_t id, zip_string_t *str);
