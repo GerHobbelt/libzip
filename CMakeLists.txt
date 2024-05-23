@@ -6,7 +6,7 @@ if (${CMAKE_VERSION} VERSION_LESS "3.17.0")
 endif()
 
 project(libzip
-  VERSION 1.10.0
+  VERSION 1.10.1
   LANGUAGES C)
 
 option(ENABLE_COMMONCRYPTO "Enable use of CommonCrypto" ON)
@@ -352,7 +352,9 @@ endforeach()
 STRING(CONCAT zlib_link_name "-l" ${ZLIB_LINK_LIBRARY_NAME})
 string(REGEX REPLACE "-lBZip2::BZip2" "-lbz2" LIBS ${LIBS})
 string(REGEX REPLACE "-lLibLZMA::LibLZMA" "-llzma" LIBS ${LIBS})
-string(REGEX REPLACE "-l${zstd_TARGET}" "-lzstd" LIBS ${LIBS})
+if(ENABLE_ZSTD)
+  string(REGEX REPLACE "-l${zstd_TARGET}" "-lzstd" LIBS ${LIBS})
+endif()
 string(REGEX REPLACE "-lOpenSSL::Crypto" "-lssl -lcrypto" LIBS ${LIBS})
 string(REGEX REPLACE "-lZLIB::ZLIB" ${zlib_link_name} LIBS ${LIBS})
 string(REGEX REPLACE "-lGnuTLS::GnuTLS" "-lgnutls" LIBS ${LIBS})
