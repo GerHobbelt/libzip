@@ -10,6 +10,14 @@ std::string random_string(size_t length);
 extern "C"
 #endif
 
+/**
+This fuzzing target takes input data, creates a ZIP archive, load it to a buffer, adds a file to it 
+with AES-256 encryption and a specified password, and then closes and removes the archive. 
+
+The purpose of this fuzzer is to test security of ZIP archive handling and encryption in the libzip 
+by subjecting it to various inputs, including potentially malicious or malformed data of different file types.
+**/
+
 int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
 {
     zip_source_t* src;
@@ -18,9 +26,9 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
     zip_int64_t i, n;
     zip_file_t* f;
 
-    std::string path = random_string(20) + "_pkware"+ ".zip";
-    const char *password = "secretpassword";
-    const char * file    = "file";   
+    std::string path = random_string(20) + "_aes256"+ ".zip";
+    const char *password = random_string(20).c_str();
+    const char * file    = random_string(20).c_str();   
     int error = 0;
     struct zip *archive = zip_open(path.c_str(), ZIP_CREATE, &error);
 
@@ -38,7 +46,7 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
         printf("failed to add file to archive: %s\n",zip_strerror(archive));
         return -1;
     }
-    zip_file_set_encryption(archive, index, ZIP_EM_TRAD_PKWARE,/* Password to encrypt file */ password);
+    zip_file_set_encryption(archive, index, ZIP_EM_AES_256, password);
     zip_close(archive);
     std::remove(path.c_str()); 
 
