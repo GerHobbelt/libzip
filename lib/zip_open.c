@@ -525,8 +525,8 @@ _zip_headercomp(const zip_dirent_t *central, const zip_dirent_t *local) {
 	|| (central->bitflags != local->bitflags)
 #endif
         || (central->comp_method != local->comp_method)
-        || (central->last_mod_date != local->last_mod_date)
-        || (central->last_mod_time != local->last_mod_time)
+        || (central->last_mod.time != local->last_mod.time)
+        || (central->last_mod.date != local->last_mod.date)
         || !_zip_string_equal(central->filename, local->filename))
         return -1;
 
@@ -973,7 +973,7 @@ zip_check_torrentzip(zip_t *za, const zip_cdir_t *cdir) {
         st.valid |= ZIP_STAT_SIZE | ZIP_STAT_CRC;
         st.size = cdir->size;
         st.crc = crc_should;
-        if ((src_window = _zip_source_window_new(za->src, cdir->offset, cdir->size, &st, 0, NULL, NULL, 0, false, NULL)) == NULL) {
+        if ((src_window = _zip_source_window_new(za->src, cdir->offset, cdir->size, &st, 0, NULL, NULL, NULL, 0, false, NULL)) == NULL) {
             return;
         }
         if ((src_crc = zip_source_crc_create(src_window, 1, NULL)) == NULL) {

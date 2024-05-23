@@ -1,6 +1,6 @@
 /*
-  zip_source_pass_to_lower_layer.c -- pass command to lower layer
-  Copyright (C) 2022 Dieter Baron and Thomas Klausner
+  zip_source_get_dostime.c -- get modification time in DOS format from source
+  Copyright (C) 2024 Dieter Baron and Thomas Klausner
 
   This file is part of libzip, a library to manipulate ZIP archives.
   The authors can be contacted at <info@libzip.org>
@@ -31,48 +31,42 @@
   IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+
 #include "zipint.h"
 
-zip_int64_t zip_source_pass_to_lower_layer(zip_source_t *src, void *data, zip_uint64_t length, zip_source_cmd_t command) {
-    switch (command) {
-    case ZIP_SOURCE_OPEN:
-    case ZIP_SOURCE_CLOSE:
-    case ZIP_SOURCE_FREE:
-    case ZIP_SOURCE_GET_FILE_ATTRIBUTES:
-    case ZIP_SOURCE_SUPPORTS_REOPEN:
-        return 0;
-
-    case ZIP_SOURCE_STAT:
-        return sizeof(zip_stat_t);
-
-    case ZIP_SOURCE_ACCEPT_EMPTY:
-    case ZIP_SOURCE_ERROR:
-    case ZIP_SOURCE_GET_DOS_TIME:
-    case ZIP_SOURCE_READ:
-    case ZIP_SOURCE_SEEK:
-    case ZIP_SOURCE_TELL:
-        return _zip_source_call(src, data, length, command);
-
-    case ZIP_SOURCE_BEGIN_WRITE:
-    case ZIP_SOURCE_BEGIN_WRITE_CLONING:
-    case ZIP_SOURCE_COMMIT_WRITE:
-    case ZIP_SOURCE_REMOVE:
-    case ZIP_SOURCE_ROLLBACK_WRITE:
-    case ZIP_SOURCE_SEEK_WRITE:
-    case ZIP_SOURCE_TELL_WRITE:
-    case ZIP_SOURCE_WRITE:
-        zip_error_set(&src->error, ZIP_ER_OPNOTSUPP, 0);
+/* Returns -1 on error, 0 on no dostime available, 1 for dostime returned */
+ZIP_EXTERN int
+zip_source_get_dos_time(zip_source_t *src, zip_dostime_t *dos_time) {
+    if (src->source_closed) {
         return -1;
+    }
+    if (dos_time == NULL) {
+        zip_error_set(&src->error, ZIP_ER_INVAL, 0);
+        return -1;
+    }
 
-    case ZIP_SOURCE_SUPPORTS:
-        if (length < sizeof(zip_int64_t)) {
+    if (src->write_state == ZIP_SOURCE_WRITE_REMOVED) {
+        zip_error_set(&src->error, ZIP_ER_READ, ENOENT);
+    }
+
+    if (zip_source_supports(src) & ZIP_SOURCE_MAKE_COMMAND_BITMASK(ZIP_SOURCE_GET_DOS_TIME)) {
+        zip_int64_t n = _zip_source_call(src, dos_time, sizeof(*dos_time), ZIP_SOURCE_GET_DOS_TIME);
+
+        if (n < 0) {
+            return -1;
+        }
+        else if (n == 0) {
+            return 0;
+        }
+        else if (n == sizeof(*dos_time)) {
+            return 1;
+        }
+        else {
             zip_error_set(&src->error, ZIP_ER_INTERNAL, 0);
             return -1;
         }
-        return *(zip_int64_t *)data;
-
-    default:
-        zip_error_set(&src->error, ZIP_ER_OPNOTSUPP, 0);
-        return -1;
+    }
+    else {
+        return 0;
     }
 }
