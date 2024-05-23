@@ -49,6 +49,8 @@ int main(int argc, const char** argv)
         fprintf(stderr, "fread() failed\n");
         goto err;
     }
+    fclose(f);
+    f = NULL;
 
     (void)LLVMFuzzerTestOneInput((uint8_t *)buf, siz_buf);
 
