@@ -36,9 +36,15 @@
 
 #include "zipint.h"
 
+#include "zip_crypto.h"
+
+#ifndef HAVE_SECURE_RANDOM
+
 bool
 zip_secure_random(zip_uint8_t *buffer, zip_uint16_t length) {
     memset(buffer, 0, length);
 
     return true;
 }
+
+#endif

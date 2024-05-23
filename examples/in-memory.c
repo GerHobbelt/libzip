@@ -120,8 +120,6 @@ use_data(void *data, size_t size, const char *archive) {
 }
 
 
-
-
 #if defined(BUILD_MONOLITHIC)
 #define main(cnt, arr)      zip_example_in_memory_main(cnt, arr)
 #endif
@@ -137,13 +135,13 @@ int main(int argc, const char** argv)
 
     if (argc < 2) {
         fprintf(stderr, "usage: %s archive\n", argv[0]);
-        return 1;
+        return EXIT_FAILURE;
     }
     archive = argv[1];
 
     /* get buffer with zip archive inside */
     if (get_data(&data, &size, archive) < 0) {
-        return 1;
+        return EXIT_FAILURE;
     }
 
     zip_error_init(&error);
@@ -152,7 +150,7 @@ int main(int argc, const char** argv)
         fprintf(stderr, "can't create source: %s\n", zip_error_strerror(&error));
         free(data);
         zip_error_fini(&error);
-        return 1;
+        return EXIT_FAILURE;
     }
 
     /* open zip archive from source */
@@ -160,7 +158,7 @@ int main(int argc, const char** argv)
         fprintf(stderr, "can't open zip from source: %s\n", zip_error_strerror(&error));
         zip_source_free(src);
         zip_error_fini(&error);
-        return 1;
+        return EXIT_FAILURE;
     }
     zip_error_fini(&error);
 
@@ -173,7 +171,7 @@ int main(int argc, const char** argv)
     /* close archive */
     if (zip_close(za) < 0) {
         fprintf(stderr, "can't close zip archive '%s': %s\n", archive, zip_strerror(za));
-        return 1;
+        return EXIT_FAILURE;
     }
 
 
@@ -188,25 +186,25 @@ int main(int argc, const char** argv)
 
         if (zip_source_stat(src, &zst) < 0) {
             fprintf(stderr, "can't stat source: %s\n", zip_error_strerror(zip_source_error(src)));
-            return 1;
+            return EXIT_FAILURE;
         }
 
         size = zst.size;
 
         if (zip_source_open(src) < 0) {
             fprintf(stderr, "can't open source: %s\n", zip_error_strerror(zip_source_error(src)));
-            return 1;
+            return EXIT_FAILURE;
         }
         if ((data = malloc(size)) == NULL) {
             fprintf(stderr, "malloc failed: %s\n", strerror(errno));
             zip_source_close(src);
-            return 1;
+            return EXIT_FAILURE;
         }
         if ((zip_uint64_t)zip_source_read(src, data, size) < size) {
             fprintf(stderr, "can't read data from source: %s\n", zip_error_strerror(zip_source_error(src)));
             zip_source_close(src);
             free(data);
-            return 1;
+            return EXIT_FAILURE;
         }
         zip_source_close(src);
     }
@@ -219,5 +217,5 @@ int main(int argc, const char** argv)
 
     free(data);
 
-    return 0;
+    return EXIT_SUCCESS;
 }

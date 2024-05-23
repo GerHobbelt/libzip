@@ -13,15 +13,15 @@ zip_uint64_t fragment_size = 0;
 zip_file_t *z_files[16];
 unsigned int z_files_count;
 
-static int add_nul(const char *argv[]);
-static int cancel(const char *argv[]);
-static int regress_fopen(char *argv[]);
-static int regress_fread(char *argv[]);
-static int regress_fseek(char *argv[]);
-static int is_seekable(const char *argv[]);
-static int unchange_one(const char *argv[]);
-static int unchange_all(const char *argv[]);
-static int zin_close(const char *argv[]);
+static int add_nul(const char **argv);
+static int cancel(const char **argv);
+static int regress_fopen(const char **argv);
+static int regress_fread(const char **argv);
+static int regress_fseek(const char **argv);
+static int is_seekable(const char **argv);
+static int unchange_one(const char **argv);
+static int unchange_all(const char **argv);
+static int zin_close(const char **argv);
 
 #define OPTIONS_REGRESS "F:Hm"
 
@@ -81,7 +81,7 @@ static zip_source_t *source_nul(zip_t *za, zip_uint64_t length);
 
 
 static int
-add_nul(const char *argv[]) {
+add_nul(const char **argv) {
     zip_source_t *zs;
     zip_uint64_t length = strtoull(argv[1], NULL, 10);
 
@@ -107,7 +107,7 @@ cancel_callback(zip_t *archive, void *ud) {
 }
 
 static int
-cancel(const char *argv[]) {
+cancel(const char **argv) {
     zip_int64_t percent;
     percent = strtoll(argv[0], NULL, 10);
     if (percent > 100 || percent < 0) {
@@ -124,7 +124,7 @@ cancel(const char *argv[]) {
 }
 
 static int
-is_seekable(const char *argv[]) {
+is_seekable(const char **argv) {
     zip_uint64_t idx;
     zip_file_t *zf;
 
@@ -148,7 +148,7 @@ is_seekable(const char *argv[]) {
 }
 
 static int
-regress_fseek(const char *argv[]) {
+regress_fseek(const char **argv) {
     zip_uint64_t file_idx;
     zip_file_t *zf;
     zip_int64_t offset;
@@ -171,7 +171,7 @@ regress_fseek(const char *argv[]) {
 }
 
 static int
-unchange_all(const char *argv[]) {
+unchange_all(const char **argv) {
     if (zip_unchange_all(za) < 0) {
         fprintf(stderr, "can't revert changes to archive: %s\n", zip_strerror(za));
         return -1;
@@ -181,7 +181,7 @@ unchange_all(const char *argv[]) {
 
 
 static int
-unchange_one(const char *argv[]) {
+unchange_one(const char **argv) {
     zip_uint64_t idx;
 
     idx = strtoull(argv[0], NULL, 10);
@@ -195,7 +195,7 @@ unchange_one(const char *argv[]) {
 }
 
 static int
-zin_close(const char *argv[]) {
+zin_close(const char **argv) {
     zip_uint64_t idx;
 
     idx = strtoull(argv[0], NULL, 10);
@@ -214,7 +214,7 @@ zin_close(const char *argv[]) {
 }
 
 static int
-regress_fopen(char *argv[]) {
+regress_fopen(const char **argv) {
     if (z_files_count >= (sizeof(z_files) / sizeof(*z_files))) {
         fprintf(stderr, "too many open files\n");
         return -1;
@@ -230,7 +230,7 @@ regress_fopen(char *argv[]) {
 
 
 static int
-regress_fread(char *argv[]) {
+regress_fread(const char **argv) {
     zip_uint64_t file_idx;
     zip_uint64_t length;
     char buf[8192];

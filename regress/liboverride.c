@@ -34,6 +34,8 @@
 
 #include "zipint.h"
 
+#ifndef _WIN32
+
 /*
  Some systems bind functions called and defined within a shared library, so the override doesn't work. This overrides a function called by zip_open to return an invalid error code so we can check whether the override works.
  */
@@ -46,3 +48,5 @@ zip_source_file_create(const char *fname, zip_uint64_t start, zip_int64_t length
     
     return NULL;
 }
+
+#endif

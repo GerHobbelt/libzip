@@ -33,9 +33,9 @@
 
 #include "zipint.h"
 
-#ifdef HAVE_CRYPTO
+#if !defined(_WIN32)
+
 #include "zip_crypto.h"
-#endif
 
 #ifdef HAVE_ARC4RANDOM
 
@@ -110,3 +110,5 @@ zip_random_uint32(void) {
 #endif
 
 #endif /* HAVE_ARC4RANDOM */
+
+#endif

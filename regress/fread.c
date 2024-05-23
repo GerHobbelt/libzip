@@ -51,6 +51,7 @@ static int do_read(zip_t *z, const char *name, zip_flags_t flags, enum when when
 static int verbose;
 
 static const char *progname;
+
 #define USAGE "usage: %s [-v] archive\n"
 
 

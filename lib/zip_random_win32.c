@@ -33,9 +33,9 @@
 
 #include "zipint.h"
 
-#ifdef HAVE_CRYPTO
+#if defined(_WIN32)
+
 #include "zip_crypto.h"
-#endif
 
 #include <windows.h>
 
@@ -78,4 +78,6 @@ zip_random_uint32(void) {
 
     return (zip_uint32_t)rand();
 }
+#endif
+
 #endif

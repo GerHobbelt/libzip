@@ -36,6 +36,7 @@
 #include <string.h>
 
 #include "zipint.h"
+
 #include "zip_crypto.h"
 
 struct winzip_aes {

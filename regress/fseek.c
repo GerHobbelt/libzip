@@ -36,6 +36,7 @@
 #include "zip.h"
 
 static const char *progname;
+
 #define USAGE "usage: %s archive index offset\n"
 
 

@@ -50,6 +50,22 @@
 #define ZIP_EXTERN __declspec(dllexport)
 #endif
 #endif
+
+/*
+ * MSVC: include these *now* or you'll get very curious errors later on while compiling the libzip source files, e.g.:
+ * 
+ * C:\Program Files (x86)\Windows Kits\10\Include\10.0.22621.0\ucrt\corecrt_wstdio.h(1698,1): error C2059: syntax error: '('
+ *
+ * and, yes, that's an error reported *inside* a system header file because memcpy et al will be redefined later on and
+ * those defines will b0rk the system header files for MSVC.
+ */
+#include <windows.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <crtdbg.h>
+/* end of fix: include series */
+
 /* for dup(), close(), etc. */
 #include <io.h>
 #endif

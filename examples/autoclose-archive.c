@@ -47,7 +47,7 @@ struct ctx {
     zip_t* archive;
 };
 
-zip_int64_t callback(zip_source_t* src, void *ud, void* data, zip_uint64_t length, zip_source_cmd_t command) {
+static zip_int64_t callback(zip_source_t* src, void *ud, void* data, zip_uint64_t length, zip_source_cmd_t command) {
     struct ctx* ctx = (struct ctx*)ud;
 
     switch (command) {
@@ -64,7 +64,7 @@ zip_int64_t callback(zip_source_t* src, void *ud, void* data, zip_uint64_t lengt
     }
 }
 
-zip_source_t* create_layered_autoclose(zip_source_t* source, zip_t *archive, zip_error_t *error) {
+static zip_source_t* create_layered_autoclose(zip_source_t* source, zip_t *archive, zip_error_t *error) {
     struct ctx* ctx = (struct ctx*)malloc(sizeof(*ctx));
     zip_source_t *autoclose_source;
 
@@ -89,8 +89,12 @@ zip_source_t* create_layered_autoclose(zip_source_t* source, zip_t *archive, zip
 }
 
 
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr) zip_example_autoclose_main(cnt, arr)
+#endif
+
 int
-main(int argc, char *argv[]) {
+main(int argc, const char **argv) {
     const char *destination_archive, *source_archive, *source_file;
     zip_int64_t index;
     zip_source_t *src, *src_autoclose;
@@ -99,7 +103,7 @@ main(int argc, char *argv[]) {
 
     if (argc != 4) {
         fprintf(stderr, "usage: %s destination-archive source-archive source-file\n", argv[0]);
-        return 1;
+        return EXIT_FAILURE;
     }
     destination_archive = argv[1];
     source_archive = argv[2];
@@ -111,19 +115,19 @@ main(int argc, char *argv[]) {
         zip_error_init_with_code(&error, err);
         fprintf(stderr, "%s: cannot open zip archive '%s': %s\n", argv[0], source_archive, zip_error_strerror(&error));
         zip_error_fini(&error);
-        exit(1);
+        return EXIT_FAILURE;
     }
 
     if ((index = zip_name_locate(z_source, source_file, 0)) < 0) {
         fprintf(stderr, "%s: cannot find file '%s' in '%s': %s\n", argv[0], source_file, source_archive, zip_strerror(z_source));
         zip_discard(z_source);
-        exit(1);
+        return EXIT_FAILURE;
 
     }
     if ((src = zip_source_zip_file(z_source, z_source, index, 0, 0, -1, NULL)) == NULL) {
         fprintf(stderr, "%s: cannot open file '%s' in '%s': %s\n", argv[0], source_file, source_archive, zip_strerror(z_source));
         zip_discard(z_source);
-        exit(1);
+        return EXIT_FAILURE;
     }
 
     zip_error_t error;
@@ -131,7 +135,7 @@ main(int argc, char *argv[]) {
         fprintf(stderr, "%s: cannot create layered source: %s\n", argv[0], zip_error_strerror(&error));
         zip_source_free(src);
         zip_discard(z_source);
-        exit(1);
+        return EXIT_FAILURE;
     }
 
     if ((z_destination = zip_open(destination_archive, ZIP_CREATE, &err)) == NULL) {
@@ -139,7 +143,7 @@ main(int argc, char *argv[]) {
         fprintf(stderr, "%s: cannot open zip archive '%s': %s\n", argv[0], destination_archive, zip_error_strerror(&error));
         zip_error_fini(&error);
         zip_source_free(src_autoclose); /* freeing src_autoclose closes z_source */
-        exit(1);
+        return EXIT_FAILURE;
     }
 
 
@@ -147,14 +151,14 @@ main(int argc, char *argv[]) {
         fprintf(stderr, "%s: cannot add file: %s\n", argv[0], zip_strerror(z_source));
         zip_source_free(src_autoclose);
         zip_discard(z_destination);
-        exit(1);
+        return EXIT_FAILURE;
     }
 
     if ((zip_close(z_destination)) < 0) {
         fprintf(stderr, "%s: cannot close archive '%s': %s\n", argv[0], destination_archive, zip_strerror(z_source));
         zip_discard(z_destination);
-        exit(1);
+        return EXIT_FAILURE;
     }
 
-    exit(0);
+    return EXIT_SUCCESS;
 }

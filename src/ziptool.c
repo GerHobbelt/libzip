@@ -63,7 +63,7 @@ typedef struct dispatch_table_s {
     int argument_count;
     const char *arg_names;
     const char *description;
-    int (*function)(const char *argv[]);
+    int (*function)(const char **argv);
 } dispatch_table_t;
 
 static zip_flags_t get_flags(const char *arg);
@@ -145,7 +145,7 @@ cat_impl(zip_uint64_t idx, zip_uint64_t start, zip_uint64_t len) {
 }
 
 static int
-add(const char *argv[]) {
+add(const char **argv) {
     zip_source_t *zs;
 
     if ((zs = zip_source_buffer(za, argv[1], strlen(argv[1]), 0)) == NULL) {
@@ -162,7 +162,7 @@ add(const char *argv[]) {
 }
 
 static int
-add_dir(const char *argv[]) {
+add_dir(const char **argv) {
     /* add directory */
     if (zip_dir_add(za, argv[0], 0) < 0) {
         fprintf(stderr, "can't add directory '%s': %s\n", argv[0], zip_strerror(za));
@@ -172,7 +172,7 @@ add_dir(const char *argv[]) {
 }
 
 static int
-add_file(const char *argv[]) {
+add_file(const char **argv) {
     zip_source_t *zs;
     zip_uint64_t start = strtoull(argv[2], NULL, 10);
     zip_int64_t len = strtoll(argv[3], NULL, 10);
@@ -199,7 +199,7 @@ add_file(const char *argv[]) {
 }
 
 static int
-add_from_zip(const char *argv[]) {
+add_from_zip(const char **argv) {
     zip_uint64_t idx, start;
     zip_int64_t len;
     int err;
@@ -235,7 +235,7 @@ add_from_zip(const char *argv[]) {
 }
 
 static int
-cat(const char *argv[]) {
+cat(const char **argv) {
     /* output file contents to stdout */
     zip_uint64_t idx;
     idx = strtoull(argv[0], NULL, 10);
@@ -244,7 +244,7 @@ cat(const char *argv[]) {
 }
 
 static int
-cat_partial(char *argv[]) {
+cat_partial(const char **argv) {
     /* output partial file contents to stdout */
     zip_uint64_t idx;
     zip_uint64_t start;
@@ -258,7 +258,7 @@ cat_partial(char *argv[]) {
 }
 
 static int
-count_extra(const char *argv[]) {
+count_extra(const char **argv) {
     zip_int16_t count;
     zip_uint64_t idx;
     zip_flags_t ceflags = 0;
@@ -275,7 +275,7 @@ count_extra(const char *argv[]) {
 }
 
 static int
-count_extra_by_id(const char *argv[]) {
+count_extra_by_id(const char **argv) {
     zip_int16_t count;
     zip_uint16_t eid;
     zip_flags_t ceflags = 0;
@@ -293,7 +293,7 @@ count_extra_by_id(const char *argv[]) {
     return 0;
 }
 
-static int delete (const char *argv[]) {
+static int delete (const char **argv) {
     zip_uint64_t idx;
     idx = strtoull(argv[0], NULL, 10);
     if (zip_delete(za, idx) < 0) {
@@ -304,7 +304,7 @@ static int delete (const char *argv[]) {
 }
 
 static int
-delete_extra(const char *argv[]) {
+delete_extra(const char **argv) {
     zip_flags_t geflags;
     zip_uint16_t eid;
     zip_uint64_t idx;
@@ -319,7 +319,7 @@ delete_extra(const char *argv[]) {
 }
 
 static int
-delete_extra_by_id(const char *argv[]) {
+delete_extra_by_id(const char **argv) {
     zip_flags_t geflags;
     zip_uint16_t eid, eidx;
     zip_uint64_t idx;
@@ -335,7 +335,7 @@ delete_extra_by_id(const char *argv[]) {
 }
 
 static int
-get_archive_comment(const char *argv[]) {
+get_archive_comment(const char **argv) {
     const char *comment;
     int len;
     /* get archive comment */
@@ -347,7 +347,7 @@ get_archive_comment(const char *argv[]) {
 }
 
 static int
-get_archive_flag(char *argv[]) {
+get_archive_flag(const char **argv) {
     int flag = parse_archive_flag(argv[0]);
     if (flag < 0) {
         fprintf(stderr, "invalid archive flag '%s'\n", argv[0]);
@@ -359,7 +359,7 @@ get_archive_flag(char *argv[]) {
 }
 
 static int
-get_extra(const char *argv[]) {
+get_extra(const char **argv) {
     zip_flags_t geflags;
     zip_uint16_t id, eidx, eflen;
     const zip_uint8_t *efdata;
@@ -382,7 +382,7 @@ get_extra(const char *argv[]) {
 }
 
 static int
-get_extra_by_id(const char *argv[]) {
+get_extra_by_id(const char **argv) {
     zip_flags_t geflags;
     zip_uint16_t eid, eidx, eflen;
     const zip_uint8_t *efdata;
@@ -405,7 +405,7 @@ get_extra_by_id(const char *argv[]) {
 }
 
 static int
-get_file_comment(const char *argv[]) {
+get_file_comment(const char **argv) {
     const char *comment;
     zip_uint32_t len;
     zip_uint64_t idx;
@@ -423,7 +423,7 @@ get_file_comment(const char *argv[]) {
 }
 
 static int
-get_num_entries(const char *argv[]) {
+get_num_entries(const char **argv) {
     zip_int64_t count;
     zip_flags_t flags;
     /* get number of entries in archive */
@@ -434,7 +434,7 @@ get_num_entries(const char *argv[]) {
 }
 
 static int
-name_locate(const char *argv[]) {
+name_locate(const char **argv) {
     zip_flags_t flags;
     zip_int64_t idx;
     flags = get_flags(argv[1]);
@@ -463,13 +463,13 @@ progress_callback(zip_t *archive, double percentage, void *ud) {
 }
 
 static int
-print_progress(const char *argv[]) {
+print_progress(const char **argv) {
     zip_register_progress_callback_with_state(za, 0.001, progress_callback, NULL, NULL);
     return 0;
 }
 
 static int
-zrename(const char *argv[]) {
+zrename(const char **argv) {
     zip_uint64_t idx;
     idx = strtoull(argv[0], NULL, 10);
     if (zip_file_rename(za, idx, argv[1], 0) < 0) {
@@ -480,7 +480,7 @@ zrename(const char *argv[]) {
 }
 
 static int
-replace_file_contents(const char *argv[]) {
+replace_file_contents(const char **argv) {
     /* replace file contents with data from command line */
     const char *content;
     zip_source_t *s;
@@ -496,7 +496,7 @@ replace_file_contents(const char *argv[]) {
 }
 
 static int
-set_extra(const char *argv[]) {
+set_extra(const char **argv) {
     zip_flags_t geflags;
     zip_uint16_t eid, eidx;
     const zip_uint8_t *efdata;
@@ -514,7 +514,7 @@ set_extra(const char *argv[]) {
 }
 
 static int
-set_archive_comment(const char *argv[]) {
+set_archive_comment(const char **argv) {
     if (zip_set_archive_comment(za, argv[0], (zip_uint16_t)strlen(argv[0])) < 0) {
         fprintf(stderr, "can't set archive comment to '%s': %s\n", argv[0], zip_strerror(za));
         return -1;
@@ -523,7 +523,7 @@ set_archive_comment(const char *argv[]) {
 }
 
 static int
-set_archive_flag(char *argv[]) {
+set_archive_flag(const char **argv) {
     int flag = parse_archive_flag(argv[0]);
     if (flag < 0) {
         fprintf(stderr, "invalid archive flag '%s'\n", argv[0]);
@@ -541,7 +541,7 @@ set_archive_flag(char *argv[]) {
 
 
 static int
-set_file_comment(const char *argv[]) {
+set_file_comment(const char **argv) {
     zip_uint64_t idx;
     idx = strtoull(argv[0], NULL, 10);
     if (zip_file_set_comment(za, idx, argv[1], (zip_uint16_t)strlen(argv[1]), 0) < 0) {
@@ -552,7 +552,7 @@ set_file_comment(const char *argv[]) {
 }
 
 static int
-set_file_compression(const char *argv[]) {
+set_file_compression(const char **argv) {
     zip_int32_t method;
     zip_uint32_t flags;
     zip_uint64_t idx;
@@ -567,7 +567,7 @@ set_file_compression(const char *argv[]) {
 }
 
 static int
-set_file_encryption(const char *argv[]) {
+set_file_encryption(const char **argv) {
     zip_uint16_t method;
     zip_uint64_t idx;
     const char *password;
@@ -585,7 +585,7 @@ set_file_encryption(const char *argv[]) {
 }
 
 static int
-set_file_dostime(const char *argv[]) {
+set_file_dostime(const char **argv) {
     /* set file last modification time (mtime) directly */
     zip_uint16_t dostime, dosdate;
     zip_uint64_t idx;
@@ -600,7 +600,7 @@ set_file_dostime(const char *argv[]) {
 }
 
 static int
-set_file_mtime(const char *argv[]) {
+set_file_mtime(const char **argv) {
     /* set file last modification time (mtime) */
     time_t mtime;
     zip_uint64_t idx;
@@ -614,7 +614,7 @@ set_file_mtime(const char *argv[]) {
 }
 
 static int
-set_file_mtime_all(const char *argv[]) {
+set_file_mtime_all(const char **argv) {
     /* set last modification time (mtime) for all files */
     time_t mtime;
     zip_int64_t num_entries;
@@ -635,7 +635,7 @@ set_file_mtime_all(const char *argv[]) {
 }
 
 static int
-set_password(const char *argv[]) {
+set_password(const char **argv) {
     /* set default password */
     if (zip_set_default_password(za, argv[0]) < 0) {
         fprintf(stderr, "can't set default password to '%s'\n", argv[0]);
@@ -645,7 +645,7 @@ set_password(const char *argv[]) {
 }
 
 static int
-zstat(const char *argv[]) {
+zstat(const char **argv) {
     zip_uint64_t idx;
     char buf[100];
     struct zip_stat sb;
@@ -866,7 +866,7 @@ dispatch_table_t dispatch_table[] = {{"add", 2, "name content", "add file called
 };
 
 static int
-dispatch(int argc, const char *argv[]) {
+dispatch(int argc, const char **argv) {
     unsigned int i;
     for (i = 0; i < sizeof(dispatch_table) / sizeof(dispatch_table_t); i++) {
         if (strcmp(dispatch_table[i].cmdline_name, argv[0]) == 0) {

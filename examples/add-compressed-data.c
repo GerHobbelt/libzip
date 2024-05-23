@@ -49,7 +49,7 @@ struct ctx {
     zip_uint32_t compression_method;
 };
 
-zip_int64_t callback(zip_source_t* src, void *ud, void* data, zip_uint64_t length, zip_source_cmd_t command) {
+static zip_int64_t callback(zip_source_t* src, void *ud, void* data, zip_uint64_t length, zip_source_cmd_t command) {
     struct ctx* ctx = (struct ctx*)ud;
 
     switch (command) {
@@ -79,7 +79,7 @@ zip_int64_t callback(zip_source_t* src, void *ud, void* data, zip_uint64_t lengt
     }
 }
 
-zip_source_t* create_layered_compressed_source(zip_source_t* source, zip_uint64_t uncompressed_size, zip_uint32_t crc, zip_uint32_t compression_method, zip_error_t *error) {
+static zip_source_t* create_layered_compressed_source(zip_source_t* source, zip_uint64_t uncompressed_size, zip_uint32_t crc, zip_uint32_t compression_method, zip_error_t *error) {
     struct ctx* ctx = (struct ctx*)malloc(sizeof(*ctx));
     zip_source_t *compressed_source;
 
@@ -108,10 +108,10 @@ zip_source_t* create_layered_compressed_source(zip_source_t* source, zip_uint64_
 
 /* This is the information needed to add pre-compressed data to a zip archive. data must be compressed in a format compatible with Zip (e.g. no gzip header for deflate). */
 
-zip_uint16_t compression_method = ZIP_CM_DEFLATE;
-zip_uint64_t uncompressed_size = 60;
-zip_uint32_t crc = 0xb0354048;
-zip_uint8_t data[] = {
+static zip_uint16_t compression_method = ZIP_CM_DEFLATE;
+static zip_uint64_t uncompressed_size = 60;
+static zip_uint32_t crc = 0xb0354048;
+static zip_uint8_t data[] = {
     0x4B, 0x4C, 0x44, 0x06, 0x5C, 0x49, 0x28, 0x80,
     0x2B, 0x11, 0x55 ,0x36, 0x19, 0x05, 0x70, 0x01,
     0x00
@@ -127,7 +127,7 @@ main(int argc, char *argv[]) {
 
     if (argc != 2) {
         fprintf(stderr, "usage: %s archive\n", argv[0]);
-        return 1;
+        return EXIT_FAILURE;
     }
     archive = argv[1];
 
@@ -136,14 +136,14 @@ main(int argc, char *argv[]) {
         zip_error_init_with_code(&error, err);
         fprintf(stderr, "%s: cannot open zip archive '%s': %s\n", argv[0], archive, zip_error_strerror(&error));
         zip_error_fini(&error);
-        exit(1);
+        return EXIT_FAILURE;
     }
 
     /* The data can come from any source. To keep the example simple, it is provided in a static buffer here. */
     if ((src = zip_source_buffer(za, data, sizeof(data), 0)) == NULL) {
         fprintf(stderr, "%s: cannot create buffer source: %s\n", argv[0], zip_strerror(za));
         zip_discard(za);
-        exit(1);
+        return EXIT_FAILURE;
     }
 
     zip_error_t error;
@@ -151,21 +151,21 @@ main(int argc, char *argv[]) {
         fprintf(stderr, "%s: cannot create layered source: %s\n", argv[0], zip_error_strerror(&error));
         zip_source_free(src);
         zip_discard(za);
-        exit(1);
+        return EXIT_FAILURE;
     }
 
     if ((zip_file_add(za, "precompressed", src_comp, 0)) < 0) {
         fprintf(stderr, "%s: cannot add precompressed file: %s\n", argv[0], zip_strerror(za));
         zip_source_free(src_comp);
         zip_discard(za);
-        exit(1);
+        return EXIT_FAILURE;
     }
 
     if ((zip_close(za)) < 0) {
         fprintf(stderr, "%s: cannot close archive '%s': %s\n", argv[0], archive, zip_strerror(za));
         zip_discard(za);
-        exit(1);
+        return EXIT_FAILURE;
     }
 
-    exit(0);
+    return EXIT_SUCCESS;
 }

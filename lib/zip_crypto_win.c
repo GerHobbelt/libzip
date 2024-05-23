@@ -35,6 +35,8 @@
 
 #include "zipint.h"
 
+#if defined(_WIN32)
+
 #include "zip_crypto.h"
 
 #define WIN32_LEAN_AND_MEAN
@@ -493,3 +495,5 @@ ZIP_EXTERN bool
 zip_secure_random(zip_uint8_t *buffer, zip_uint16_t length) {
     return BCRYPT_SUCCESS(BCryptGenRandom(NULL, buffer, length, BCRYPT_USE_SYSTEM_PREFERRED_RNG));
 }
+
+#endif
