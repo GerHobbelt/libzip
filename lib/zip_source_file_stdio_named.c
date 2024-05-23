@@ -295,7 +295,7 @@ static int create_temp_file(zip_source_file_context_t *ctx, bool create_file) {
     char *temp;
     int mode;
     struct stat st;
-    int fd;
+    int fd = 0;
     char *start, *end;
     
     if (stat(ctx->fname, &st) == 0) {
@@ -363,7 +363,7 @@ static int create_temp_file(zip_source_file_context_t *ctx, bool create_file) {
     
     ctx->tmpname = temp;
     
-    return create_file ? fd : 0;
+    return fd; /* initialized to 0 if !create_file */
 }
 
 

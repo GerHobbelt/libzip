@@ -12,6 +12,7 @@ source_type_t source_type = SOURCE_TYPE_NONE;
 zip_uint64_t fragment_size = 0;
 zip_file_t *z_files[16];
 unsigned int z_files_count;
+int commands_from_stdin = 0;
 
 static int add_nul(const char **argv);
 static int cancel(const char **argv);
@@ -24,13 +25,16 @@ static int unchange_one(const char **argv);
 static int unchange_all(const char **argv);
 static int zin_close(const char **argv);
 
-#define OPTIONS_REGRESS "F:Hmx"
+#define OPTIONS_REGRESS "F:Himx"
 
-#define USAGE_REGRESS " [-Hmx] [-F fragment-size]"
+#define USAGE_REGRESS " [-Himx] [-F fragment-size]"
 
 #define GETOPT_REGRESS                              \
     case 'H':                                       \
         source_type = SOURCE_TYPE_HOLE;             \
+        break;                                      \
+    case 'i':                                       \
+        commands_from_stdin = 1;                    \
         break;                                      \
     case 'm':                                       \
         source_type = SOURCE_TYPE_IN_MEMORY;        \
@@ -69,6 +73,20 @@ static int zin_close(const char **argv);
 
 /* clang-format on */
 
+#define MAX_STDIN_ARGC  128
+#define MAX_STDIN_LENGTH    8192
+
+char* stdin_argv[MAX_STDIN_ARGC];
+static char stdin_line[MAX_STDIN_LENGTH];
+
+int get_stdin_commands(void);
+
+#define REGRESS_PREPARE_ARGS                \
+    if (commands_from_stdin) {              \
+        argc = get_stdin_commands();        \
+        arg = 0;                            \
+        argv = stdin_argv;                  \
+    }
 
 zip_t *ziptool_open(const char *archive, int flags, zip_error_t *error, zip_uint64_t offset, zip_uint64_t len);
 
@@ -76,6 +94,34 @@ zip_t *ziptool_open(const char *archive, int flags, zip_error_t *error, zip_uint
 #define REGRESS   1
 #include "ziptool.c"
 
+int get_stdin_commands(void) {
+    int argc = 0;
+    char *p, *word;
+    fgets(stdin_line, sizeof(stdin_line), stdin);
+    word = p = stdin_line;
+    while (1) {
+        if (*p == ' ' || *p == '\n') {
+            *p = '\0';
+            if (word[0] != '\0') {
+                stdin_argv[argc] = word;
+                argc += 1;
+                if (argc >= MAX_STDIN_ARGC) {
+                    break;
+                }
+            }
+            word = p + 1;
+        }
+        else if (*p == '\0') {
+            if (word[0] != '\0') {
+                stdin_argv[argc] = word;
+                argc += 1;
+            }
+            break;
+        }
+        p += 1;
+    }
+    return argc;
+}
 
 static zip_source_t *memory_src = NULL;
 
