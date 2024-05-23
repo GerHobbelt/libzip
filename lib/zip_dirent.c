@@ -38,6 +38,7 @@
 #include <sys/types.h>
 #include <time.h>
 
+#include "zip.h"
 #include "zipint.h"
 
 #ifdef HAVE_ZLIB_H
@@ -296,7 +297,8 @@ _zip_dirent_init(zip_dirent_t *de) {
     de->version_needed = 10; /* 1.0 */
     de->bitflags = 0;
     de->comp_method = ZIP_CM_DEFAULT;
-    de->last_mod = 0;
+    de->last_mod_date = 0;
+    de->last_mod_time = 0;
     de->crc = 0;
     de->comp_size = 0;
     de->uncomp_size = 0;
@@ -347,7 +349,6 @@ _zip_dirent_new(void) {
 zip_int64_t
 _zip_dirent_read(zip_dirent_t *zde, zip_source_t *src, zip_buffer_t *buffer, bool local, zip_error_t *error) {
     zip_uint8_t buf[CDENTRYSIZE];
-    zip_uint16_t dostime, dosdate;
     zip_uint32_t size, variable_size;
     zip_uint16_t filename_len, comment_len, ef_len;
 
@@ -387,9 +388,8 @@ _zip_dirent_read(zip_dirent_t *zde, zip_source_t *src, zip_buffer_t *buffer, boo
     zde->comp_method = _zip_buffer_get_16(buffer);
 
     /* convert to time_t */
-    dostime = _zip_buffer_get_16(buffer);
-    dosdate = _zip_buffer_get_16(buffer);
-    zde->last_mod = _zip_d2u_time(dostime, dosdate);
+    zde->last_mod_time = _zip_buffer_get_16(buffer);
+    zde->last_mod_date = _zip_buffer_get_16(buffer);
 
     zde->crc = _zip_buffer_get_32(buffer);
     zde->comp_size = _zip_buffer_get_32(buffer);
@@ -928,7 +928,8 @@ _zip_dirent_write(zip_t *za, zip_dirent_t *de, zip_flags_t flags) {
         dosdate = 0x2198;
     }
     else {
-        _zip_u2d_time(de->last_mod, &dostime, &dosdate);
+        dostime = de->last_mod_time;
+        dosdate = de->last_mod_date;
     }
     _zip_buffer_put_16(buffer, dostime);
     _zip_buffer_put_16(buffer, dosdate);
@@ -1117,8 +1118,8 @@ _zip_get_dirent(zip_t *za, zip_uint64_t idx, zip_flags_t flags, zip_error_t *err
 }
 
 
-void
-_zip_u2d_time(time_t intime, zip_uint16_t *dtime, zip_uint16_t *ddate) {
+int
+_zip_u2d_time(time_t intime, zip_uint16_t *dtime, zip_uint16_t *ddate, zip_error_t *ze) {
     struct tm *tpm;
     struct tm tm;
     tpm = zip_localtime(&intime, &tm);
@@ -1126,7 +1127,10 @@ _zip_u2d_time(time_t intime, zip_uint16_t *dtime, zip_uint16_t *ddate) {
         /* if localtime fails, return an arbitrary date (1980-01-01 00:00:00) */
         *ddate = (1 << 5) + 1;
         *dtime = 0;
-        return;
+        if (ze) {
+            zip_error_set(ze, ZIP_ER_INVAL, errno);
+        }
+        return -1;
     }
     if (tpm->tm_year < 80) {
         tpm->tm_year = 80;
@@ -1134,6 +1138,8 @@ _zip_u2d_time(time_t intime, zip_uint16_t *dtime, zip_uint16_t *ddate) {
 
     *ddate = (zip_uint16_t)(((tpm->tm_year + 1900 - 1980) << 9) + ((tpm->tm_mon + 1) << 5) + tpm->tm_mday);
     *dtime = (zip_uint16_t)(((tpm->tm_hour) << 11) + ((tpm->tm_min) << 5) + ((tpm->tm_sec) >> 1));
+
+    return 0;
 }
 
 

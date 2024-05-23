@@ -144,6 +144,27 @@ zip_open_from_source(zip_source_t *src, int _flags, zip_error_t *error) {
 }
 
 
+static bool
+_is_truncated_zip(zip_source_t *src) {
+    unsigned char data[4];
+    /* check if the source is a truncated zip archive: true if yes, no
+       if not or can't be determined */
+    if (zip_source_seek(src, 0, SEEK_SET) < 0) {
+        return false;
+    }
+
+    if (zip_source_read(src, data, 4) != 4) {
+        return false;
+    }
+
+    if (memcmp(data, LOCAL_MAGIC, 4) == 0) {
+        /* file starts with a ZIP local header signature */
+        return true;
+    }
+    return false;
+}
+
+
 zip_t *
 _zip_open(zip_source_t *src, unsigned int flags, zip_error_t *error) {
     zip_t *za;
@@ -174,6 +195,12 @@ _zip_open(zip_source_t *src, unsigned int flags, zip_error_t *error) {
 
     if ((cdir = _zip_find_central_dir(za, len)) == NULL) {
         _zip_error_copy(error, &za->error);
+        if (zip_error_code_zip(error) == ZIP_ER_NOZIP) {
+            /* not a zip - find out if it's truncated */
+            if (_is_truncated_zip(src)) {
+                zip_error_set(error, ZIP_ER_TRUNCATED_ZIP, 0);
+            }
+        }
         /* keep src so discard does not get rid of it */
         zip_source_keep(src);
         zip_discard(za);
@@ -228,14 +255,14 @@ void
 _zip_set_open_error(int *zep, const zip_error_t *err, int ze) {
     if (err) {
         ze = zip_error_code_zip(err);
-	switch (zip_error_system_type(err)) {
-	    case ZIP_ET_SYS:
-	    case ZIP_ET_LIBZIP:
-		errno = zip_error_code_system(err);
-		break;
-		
-	    default:
-		break;
+        switch (zip_error_system_type(err)) {
+        case ZIP_ET_SYS:
+        case ZIP_ET_LIBZIP:
+            errno = zip_error_code_system(err);
+            break;
+
+        default:
+            break;
         }
     }
 
@@ -368,10 +395,10 @@ _zip_read_cdir(zip_t *za, zip_buffer_t *buffer, zip_uint64_t buf_offset, zip_err
         }
 
         if ((cd->entry[i].orig = _zip_dirent_new()) == NULL || (entry_size = _zip_dirent_read(cd->entry[i].orig, za->src, cd_buffer, false, error)) < 0) {
-	    if (zip_error_code_zip(error) == ZIP_ER_INCONS) {
-		zip_error_set(error, ZIP_ER_INCONS, ADD_INDEX_TO_DETAIL(zip_error_code_system(error), i));
-	    }
-	    else if (grown && zip_error_code_zip(error) == ZIP_ER_NOZIP) {
+            if (zip_error_code_zip(error) == ZIP_ER_INCONS) {
+                zip_error_set(error, ZIP_ER_INCONS, ADD_INDEX_TO_DETAIL(zip_error_code_system(error), i));
+            }
+            else if (grown && zip_error_code_zip(error) == ZIP_ER_NOZIP) {
                 zip_error_set(error, ZIP_ER_INCONS, MAKE_DETAIL_WITH_INDEX(ZIP_ER_DETAIL_CDIR_ENTRY_INVALID, i));
             }
             _zip_cdir_free(cd);
@@ -461,9 +488,9 @@ _zip_checkcons(zip_t *za, zip_cdir_t *cd, zip_error_t *error) {
         }
 
         if (_zip_dirent_read(&temp, za->src, NULL, true, error) == -1) {
-	    if (zip_error_code_zip(error) == ZIP_ER_INCONS) {
-		zip_error_set(error, ZIP_ER_INCONS, ADD_INDEX_TO_DETAIL(zip_error_code_system(error), i));
-	    }
+            if (zip_error_code_zip(error) == ZIP_ER_INCONS) {
+                zip_error_set(error, ZIP_ER_INCONS, ADD_INDEX_TO_DETAIL(zip_error_code_system(error), i));
+            }
             _zip_dirent_finalize(&temp);
             return -1;
         }
@@ -497,25 +524,26 @@ _zip_headercomp(const zip_dirent_t *central, const zip_dirent_t *local) {
 	   and global headers for the bitflags */
 	|| (central->bitflags != local->bitflags)
 #endif
-        || (central->comp_method != local->comp_method) || (central->last_mod != local->last_mod) || !_zip_string_equal(central->filename, local->filename))
+        || (central->comp_method != local->comp_method)
+        || (central->last_mod_date != local->last_mod_date)
+        || (central->last_mod_time != local->last_mod_time)
+        || !_zip_string_equal(central->filename, local->filename))
         return -1;
 
     if ((central->crc != local->crc) || (central->comp_size != local->comp_size) || (central->uncomp_size != local->uncomp_size)) {
         /* InfoZip stores valid values in local header even when data descriptor is used.
            This is in violation of the appnote.
-	   macOS Archive sets the compressed size even when data descriptor is used ( but not the others),
-	   also in violation of the appnote.
-	*/
-	/* if data descriptor is not used, the values must match */
+           macOS Archive sets the compressed size even when data descriptor is used ( but not the others),
+           also in violation of the appnote.
+        */
+        /* if data descriptor is not used, the values must match */
         if ((local->bitflags & ZIP_GPBF_DATA_DESCRIPTOR) == 0) {
             return -1;
-	}
-	/* when using a data descriptor, the local header value must be zero or match */
-	if ((local->crc != 0 && central->crc != local->crc) ||
-	    (local->comp_size != 0 && central->comp_size != local->comp_size) ||
-	    (local->uncomp_size != 0 && central->uncomp_size != local->uncomp_size)) {
-	    return -1;
-	}
+        }
+        /* when using a data descriptor, the local header value must be zero or match */
+        if ((local->crc != 0 && central->crc != local->crc) || (local->comp_size != 0 && central->comp_size != local->comp_size) || (local->uncomp_size != 0 && central->uncomp_size != local->uncomp_size)) {
+            return -1;
+        }
     }
 
     return 0;
@@ -655,7 +683,8 @@ _zip_find_central_dir(zip_t *za, zip_uint64_t len) {
 }
 
 
-static const unsigned char *_zip_memmem(const unsigned char *big, size_t biglen, const unsigned char *little, size_t littlelen) {
+static const unsigned char *
+_zip_memmem(const unsigned char *big, size_t biglen, const unsigned char *little, size_t littlelen) {
     const unsigned char *p;
 
     if (littlelen == 0) {
@@ -891,7 +920,8 @@ _zip_read_eocd64(zip_source_t *src, zip_buffer_t *buffer, zip_uint64_t buf_offse
 }
 
 
-static int decode_hex(char c) {
+static int
+decode_hex(char c) {
     if (c >= '0' && c <= '9') {
         return c - '0';
     }
@@ -906,17 +936,17 @@ static int decode_hex(char c) {
 /* _zip_check_torrentzip:
    check whether ZA has a valid TORRENTZIP comment, i.e. is torrentzipped */
 
-static void zip_check_torrentzip(zip_t *za, const zip_cdir_t *cdir) {
+static void
+zip_check_torrentzip(zip_t *za, const zip_cdir_t *cdir) {
     zip_uint32_t crc_should;
-    char buf[8+1];
+    char buf[8 + 1];
     size_t i;
 
     if (cdir == NULL) {
         return;
     }
 
-    if (_zip_string_length(cdir->comment) != TORRENTZIP_SIGNATURE_LENGTH + TORRENTZIP_CRC_LENGTH
-        || strncmp((const char *)cdir->comment->raw, TORRENTZIP_SIGNATURE, TORRENTZIP_SIGNATURE_LENGTH) != 0)
+    if (_zip_string_length(cdir->comment) != TORRENTZIP_SIGNATURE_LENGTH + TORRENTZIP_CRC_LENGTH || strncmp((const char *)cdir->comment->raw, TORRENTZIP_SIGNATURE, TORRENTZIP_SIGNATURE_LENGTH) != 0)
         return;
 
     memcpy(buf, cdir->comment->raw + TORRENTZIP_SIGNATURE_LENGTH, TORRENTZIP_CRC_LENGTH);
@@ -934,8 +964,8 @@ static void zip_check_torrentzip(zip_t *za, const zip_cdir_t *cdir) {
 
     {
         zip_stat_t st;
-        zip_source_t* src_window;
-        zip_source_t* src_crc;
+        zip_source_t *src_window;
+        zip_source_t *src_crc;
         zip_uint8_t buffer[512];
         zip_int64_t ret;
 
@@ -943,7 +973,7 @@ static void zip_check_torrentzip(zip_t *za, const zip_cdir_t *cdir) {
         st.valid |= ZIP_STAT_SIZE | ZIP_STAT_CRC;
         st.size = cdir->size;
         st.crc = crc_should;
-        if ((src_window = _zip_source_window_new(za->src, cdir->offset, cdir->size, &st, 0, NULL, NULL, 0, false, NULL))  == NULL) {
+        if ((src_window = _zip_source_window_new(za->src, cdir->offset, cdir->size, &st, 0, NULL, NULL, 0, false, NULL)) == NULL) {
             return;
         }
         if ((src_crc = zip_source_crc_create(src_window, 1, NULL)) == NULL) {

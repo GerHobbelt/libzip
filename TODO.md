@@ -12,8 +12,6 @@
 ## Other
 
 - split `zip_source_t` in main part and reference so we can keep track which reference called open and we can invalidate references if the underlying source gets invalidated (e. g. by `zip_close`).
-- Support extended timestamp extra field (0x5455): mtime overrides dos mtime from dirent, function to get/set all three.
-- Check UTF-8 code against https://www.cl.cam.ac.uk/~mgk25/ucs/examples/UTF-8-test.txt
 
 ## Prefixes
 
@@ -51,10 +49,8 @@ const zip_uint8_t *zip_get_archive_prefix(struct zip *za, zip_uint64_t *lengthp)
   * allow invalid data flag, used when computing extra field size before writing data
   * new command `ZIP_SOURCE_EXTRA_FIELDS`
   * no support for multiple copies of same extra field
-* delete all extra fields during `zip_replace()`
 * function to copy file from one archive to another
 * set `O_CLOEXEC` flag after fopen and mkstemp
-* `zip_file_set_mtime()`: support InfoZIP time stamps
 * support streaming output (creating new archive to e.g. stdout)
 * add function to read/set ASCII file flag
 * `zip_commit()` (to finish changes without closing archive)
@@ -63,7 +59,6 @@ const zip_uint8_t *zip_get_archive_prefix(struct zip *za, zip_uint64_t *lengthp)
 * `zipcmp`: add option for file content comparison
 * `zipcmp`: add more paranoid checks:
   * external attributes/opsys
-  * last_mod
   * version needed/made by
   * general purpose bit flags
 * add more consistency checks:
@@ -87,7 +82,7 @@ const zip_uint8_t *zip_get_archive_prefix(struct zip *za, zip_uint64_t *lengthp)
 * use bool
 * use `ZIP_SOURCE_SUPPORTS_{READABLE,SEEKABLE,WRITABLE}`
 * use `zip_source_seek_compute_offset()`
-* get rid of `zip_get_{compression,encryption}_implementation()`
+* get rid of `zip_get_encryption_implementation()`
 * use `zip_*int*_t` internally
 * `zip_source_file()`: don't allow write if start/len specify a part of the file
 
