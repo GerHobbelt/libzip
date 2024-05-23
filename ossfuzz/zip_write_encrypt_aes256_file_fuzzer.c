@@ -25,13 +25,16 @@ randomize(char *buf, int count) {
    different file types.
  **/
 
+#ifdef __cplusplus
+extern "C"
+#endif
 int
 LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     char path[20 + 7 + 4 + 1], password[21], file[21];
     int error = 0;
     struct zip *archive;
 
-    snprintf(path, sizeof(path), "XXXXXXXXXXXXXXXXXXXX_pkware.zip");
+    snprintf(path, sizeof(path), "XXXXXXXXXXXXXXXXXXXX_aes256.zip");
     snprintf(password, sizeof(password), "XXXXXXXXXXXXXXXXXXXX");
     snprintf(file, sizeof(file), "XXXXXXXXXXXXXXXXXXXX");
     randomize(path, 20);
@@ -52,6 +55,7 @@ LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
     int index = (int)zip_file_add(archive, file, source, ZIP_FL_OVERWRITE);
     if (index < 0) {
         fprintf(stderr, "failed to add file to archive: %s\n", zip_strerror(archive));
+        zip_source_free(source);
         zip_discard(archive);
         return -1;
     }
