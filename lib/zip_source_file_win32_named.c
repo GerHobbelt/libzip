@@ -211,15 +211,38 @@ _zip_win32_named_op_stat(zip_source_file_context_t *ctx, zip_source_file_stat_t 
 
     if (file_attributes.dwFileAttributes != INVALID_FILE_ATTRIBUTES) {
         if ((file_attributes.dwFileAttributes & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_DEVICE)) == 0) {
-            /* if (file_attributes.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) { */
-            /*     WIN32_FIND_DATA find_data; */
-            /*     if (file_ops->find_first_file(ctx->fname, &find_data) != INVALID_HANDLE_VALUE) { */
-            /*         st->regular_file = (find_data.dwReserved0 == IO_REPARSE_TAG_DEDUP); */
-            /*     } */
-            /* } */
-            /* else { */
-            st->regular_file = true;
-            /* } */
+            if (file_attributes.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) {
+                WIN32_FIND_DATA find_data;
+                if (file_ops->find_first_file(ctx->fname, &find_data) != INVALID_HANDLE_VALUE) {
+                    switch (find_data.dwReserved0) {
+                    case IO_REPARSE_TAG_RESERVED_ZERO:
+                    case IO_REPARSE_TAG_DEDUP:
+                    case IO_REPARSE_TAG_CLOUD:
+                    case IO_REPARSE_TAG_CLOUD_1:
+                    case IO_REPARSE_TAG_CLOUD_2:
+                    case IO_REPARSE_TAG_CLOUD_3:
+                    case IO_REPARSE_TAG_CLOUD_4:
+                    case IO_REPARSE_TAG_CLOUD_5:
+                    case IO_REPARSE_TAG_CLOUD_6:
+                    case IO_REPARSE_TAG_CLOUD_7:
+                    case IO_REPARSE_TAG_CLOUD_8:
+                    case IO_REPARSE_TAG_CLOUD_9:
+                    case IO_REPARSE_TAG_CLOUD_A:
+                    case IO_REPARSE_TAG_CLOUD_B:
+                    case IO_REPARSE_TAG_CLOUD_C:
+                    case IO_REPARSE_TAG_CLOUD_D:
+                    case IO_REPARSE_TAG_CLOUD_E:
+                    case IO_REPARSE_TAG_CLOUD_F:
+                        st->regular_file = true;
+                        break;
+                    default:
+                        break;
+                    }
+                }
+            }
+            else {
+                st->regular_file = true;
+            }
         }
     }
 
