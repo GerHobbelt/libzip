@@ -210,7 +210,7 @@ _zip_win32_named_op_stat(zip_source_file_context_t *ctx, zip_source_file_stat_t 
     st->regular_file = false;
 
     if (file_attributes.dwFileAttributes != INVALID_FILE_ATTRIBUTES) {
-        if ((file_attributes.dwFileAttributes & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_DEVICE | FILE_ATTRIBUTE_REPARSE_POINT)) == 0) {
+        if ((file_attributes.dwFileAttributes & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_DEVICE)) == 0) {
             st->regular_file = true;
         }
     }
